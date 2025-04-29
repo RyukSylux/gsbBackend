@@ -9,11 +9,15 @@ db.on('error', (err) => {console.log('Error connecting to MongoDB', err)})
 db.on('open', () => {console.log('connected to MongoDB')})
 
 app.use(express.json())
+const userRouter = require('./routes/user_route')
+const billRouter = require('./routes/bill_route')
+app.use('/api/users', userRouter)
+app.use('/api/bills', billRouter)
 
 app.get('/',(req,res) => {
     res.send('<h1>ESPèCE DE PD</h1>')
 })
 
 app.listen(port, () =>{
-    console.log(`frr c'est sur http://127.0.0.1:${port}`)
+    console.log(`ma bite c'est sur http://127.0.0.1:${port}`)
 })

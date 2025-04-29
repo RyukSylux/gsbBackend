@@ -29,6 +29,14 @@ const billSchema = new mongoose.Schema({
     },
 })
 
+billSchema.pre('save', function(next) {
+    const existingBill = this.constructor.findOne({ id: this._id });
+    if (existingBill) {
+        throw new Error('Bill already exists');
+    }
+    next();
+})
+
 const Bill = mongoose.model('Bill', billSchema)
 
 module.exports = Bill

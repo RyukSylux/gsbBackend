@@ -1,11 +1,10 @@
 const express = require('express')
 const router = express.Router()
-const { getBills, createBill, deleteBill } = require('../controllers/bill_controller.js')
-
+const { getBills, createBill, deleteBill, getUsersByEmail } = require('../controllers/bill_controller.js')
 
 router.get('/', getBills)
 
-//router.get('/:email', getUsersByEmail)
+router.get('/:email', getUsersByEmail)
 
 router.post('/', createBill)
 

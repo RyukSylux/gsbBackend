@@ -34,6 +34,25 @@ const userSchema = new mongoose.Schema({
     },
 })
 
+userSchema.pre('save', function(next) {
+   const existingUser = this.constructor.findOne({ email: this.email });
+   if (existingUser) {
+       throw new Error('Email already exists');
+   }
+    next();
+})
+
+userSchema.pre('findOneAndUpdate', function(next) {
+    const update = this.getUpdate();
+    if (update.email) {
+        const existingUser = this.constructor.findOne({ email: update.email });
+        if (existingUser) {
+            throw new Error('Email already exists');
+        }
+    }
+    next();
+})
+
 const User = mongoose.model('User', userSchema)
 
 module.exports = User
