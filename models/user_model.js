@@ -1,4 +1,6 @@
 const mongoose = require('mongoose')
+const sha256 = require('js-sha256')
+const { JWT_SECRET } = process.env
 
 const userSchema = new mongoose.Schema({
     name:{
@@ -27,19 +29,22 @@ const userSchema = new mongoose.Schema({
     role:{
         type: String,
         required : true,
-    },
-    bills:{
-        type: [mongoose.Schema.Types.ObjectId],
-        ref : 'Bills',
-    },
+    }
 })
 
 userSchema.pre('save', function(next) {
+    try{
    const existingUser = this.constructor.findOne({ email: this.email });
    if (existingUser) {
        throw new Error('Email already exists');
    }
+
+   const secret = JWT_SECRET || "secret";
+   this.password = sha256(this.password + secret);
     next();
+}catch (error) {
+        next(error);
+    }
 })
 
 userSchema.pre('findOneAndUpdate', function(next) {

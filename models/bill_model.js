@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
 const billSchema = new mongoose.Schema({
     date:{
@@ -17,6 +17,10 @@ const billSchema = new mongoose.Schema({
         type: String,
         required : true,
         default : 'Aucune description'
+    },
+    user:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref : 'User',
     },
     status:{
         type: String,

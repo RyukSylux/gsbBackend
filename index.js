@@ -11,8 +11,11 @@ db.on('open', () => {console.log('connected to MongoDB')})
 app.use(express.json())
 const userRouter = require('./routes/user_route')
 const billRouter = require('./routes/bill_route')
+const authenticationRouter = require('./routes/authentication_route')
+
 app.use('/api/users', userRouter)
 app.use('/api/bills', billRouter)
+app.use('/api/auth', authenticationRouter)
 
 app.get('/',(req,res) => {
     res.send('<h1>ESPèCE DE PD</h1>')

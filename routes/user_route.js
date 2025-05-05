@@ -1,15 +1,16 @@
 const express = require('express')
 const router = express.Router()
-const { getUsers, getUsersByEmail, createUser, deleteUser, updateUser } = require('../controllers/user_controller.js')
+const { getUsers, getUsersByEmail, createUser, deleteUser, updateUser } = require('../controller/user_controller')
+const { veryfyToken } = require('../controller/authentification_controller')
 
-router.get('/', getUsers)
-
-router.get('/:email', getUsersByEmail)
+router.get('/', veryfyToken, getUsers)
 
 router.post('/', createUser)
 
-router.delete('/:name', deleteUser)
+router.get('/:email', veryfyToken, getUsersByEmail)
 
-router.put('/:email', updateUser)
+router.delete('/:name', veryfyToken, deleteUser)
+
+router.put('/:email', veryfyToken, updateUser)
 
 module.exports = router

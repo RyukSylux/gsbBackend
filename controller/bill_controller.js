@@ -1,19 +1,29 @@
 const Bill = require('../models/bill_model')
 
-const getBills = async(req,res) => {
-    try {
-        const bills = await Bill.find()
-        res.json(bills)
-    }
-    catch (error) {
-        res.status(500).json({message: error.message})
-    }
-}
+const getBills = async (req, res) => {
+    try{
+        const {id, role } = req.user
+        let bills
+        if (role === 'admin'){
+            bills = await Bill.find()
+        }
+        else {
+            bills = await Bill.find({user: id})
+        }
+        res.status(200).json(bills)
+    }catch (error) {
+            res.status(500).json({message: "Server error"})
+        }
+};
+
 
 const createBill = async(req, res) => {
-    const newBill = req.body
     try {
-        const bill = await Bill.create(newBill)
+        const { date, amount, description, status, type } = req.body
+        const {id} = req.user
+    
+        const bill = new Bill({ date, amount, proof, description, user: id, status, type })
+        await bill.save()
         res.status(201).json(bill)
     } catch (error) {
         res.status(500).json({message: error.message})

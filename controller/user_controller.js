@@ -12,13 +12,13 @@ const getUsers = async(req,res) => {
 
 const getUsersByEmail = async(req,res) => {
     try {
-        const { email } = req.query
-        const user = await User.findOne({email})
-        console.log(email)
-        if(!user){
+        // Check if the email query parameter is provided
+        const email = req.query.email ? {email: req.query.email} : {}
+        const users = await User.find(email)
+        if(!users){
             throw new Error('User not found', {cause: 404})
         } else {
-            res.json(user)
+            res.json(users)
         }
     }
     catch (error) {
@@ -58,12 +58,12 @@ const createUser = async(req, res) => {
     const newUser = req.body
     try {
         const user = await User.create(newUser)
-        res.status(201).json(user)
+        return res.status(201).json(user)
     } catch (error) {
         if (error.code === 'User already exists') {
-            res.status(409).json({message: 'User already exists'})
+        return res.status(409).json({message: 'User already exists'})
         } else {
-            res.status(500).json({message: "Server error"})
+           return res.status(500).json({message: "Server error"})
         }
     } 
 }
@@ -78,4 +78,21 @@ const deleteUser = async(req, res) => {
     }
 }
 
-module.exports = {getUsers, getUsersByEmail, createUser, updateUser, deleteUser}
+const loginUser = async(req, res) => {
+    const { email, password } = req.body
+    try {
+        const user = await User.findOne({email, password})
+        if(!user){
+            res.status(401).json({message: 'Invalid email or password'})
+        } if (user.password !== sha256(password) + process.env.SALT) {
+            res.status(401).json({message: 'Invalid email or password'})
+        }
+        const token = jwt.sign({ id: user._id, role: user.role, email: user.email }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION });
+        res.status(200).json({ token });
+    }
+    catch (error) {
+        res.status(500).json({message: "Server error"})
+    }
+}
+
+module.exports = {getUsers, getUsersByEmail, createUser, updateUser, deleteUser, loginUser} //, getUsersByEmail, createUser, deleteUser}
