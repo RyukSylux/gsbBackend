@@ -7,60 +7,60 @@ const JWT_SECRET = process.env.JWT_SECRET || 'secretkey';
 const JWT_SALT = process.env.JWT_SALT || 'salt';
 const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '24h';
 
-const authenticateUser = async (req, res) => {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-        return res.status(400).json({ message: 'Email and password are required' });
-    }
-
-    try {
-        const user = await User.findOne({ email });
-
-        if (!user) {
-            return res.status(401).json({ message: 'Invalid email or password' });
-        }
-
-        if (user.password !== sha256(password + JWT_SALT)) {
-            return res.status(401).json({ message: 'Invalid email or password' });
-        }
-
-        const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: JWT_EXPIRATION });
-
-        res.status(200).json({ token, user });
-    } catch (error) {
-        res.status(500).json({ message: 'Internal server error', error });
-    }
-}
-
-const veryfyToken = (req, res, next) => {
-    const token = req.headers.authorization.split(' ')[1]; // Assuming the token is sent in the Authorization header as
-
-    if (!token) {
-        return res.status(401).json({ message: 'No token provided' });
-    }
-
-    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+const isAdmin = (req, res, next) => {
+    try{
+      const token = req.headers['authorization']?.split(' ')[1];
+      if (!token) {
+        return res.status(401).json({ message: 'Token manquant' });
+      }
+  
+      jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) {
-            return res.status(401).json({ message: 'Unauthorized' });
+          return res.status(403).json({ message: 'Token invalide' });
         }
-        req.userId = decoded;
+        req.user = decoded;
+        if (req.user.role !== 'admin') {
+          return res.status(403).json({ message: 'Accès refusé' });
+        }
         next();
-    });
-}
-
-const isAdmin = async (req, res) => {
-    try {
-        const { email } = req.body;
-        const user = await User.findOne(email); // Recherche par email
-        if (user && user.role === 'admin') {
-            return true; // L'utilisateur est admin
-        }
-        return false; // L'utilisateur n'est pas admin
-    } catch (error) {
-        console.error('Error checking admin status:', error);
-        return false; // En cas d'erreur, on considère que l'utilisateur n'est pas admin
+      });
+  
+    }catch (error) {
+      res.status(500).json({message: error.message})
     }
-};
-
-module.exports = { authenticateUser, veryfyToken, isAdmin};
+  }
+  
+  
+  const authenticateUser = async (req, res) => {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+  
+    if(!user){
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+    if(user.password !== sha256(password + JWT_SALT)){ // Remplacez 'secret' par le secret réel
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+  
+    const token = jwt.sign({ id: user._id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRATION });
+    res.json({ token });
+  
+  }
+  
+  const verifyToken = (req, res, next) =>{
+    const token = req.headers['authorization']?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ message: 'Token manquant' });
+    }
+  
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+      if (err) {
+        return res.status(403).json({ message: 'Token invalide' });
+      }
+      req.user = decoded;
+      next();
+    });
+  }
+  
+  
+  module.exports = {isAdmin, authenticateUser, verifyToken}

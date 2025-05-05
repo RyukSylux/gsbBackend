@@ -1,9 +1,14 @@
 const express = require('express')
 const app = express()
 const port = 3000
+require('dotenv').config()
+
+const MONGO_URI = process.env.MONGO_URI || 'cluster0.q8tp4.mongodb.net/gsb'
+const MONGO_USER = process.env.MONGO_USER || 'ryuk'
+const MONGO_PASSWORD = process.env.MONGO_PASSWORD || 'ryuk'
 
 const mongoose = require('mongoose')
-mongoose.connect('mongodb+srv://ryuk:ryuk@cluster0.q8tp4.mongodb.net/gsb')
+mongoose.connect('mongodb+srv://'+MONGO_USER+':'+MONGO_PASSWORD+'@'+MONGO_URI)
 const db = mongoose.connection
 db.on('error', (err) => {console.log('Error connecting to MongoDB', err)})
 db.on('open', () => {console.log('connected to MongoDB')})
@@ -15,7 +20,7 @@ const authenticationRouter = require('./routes/authentication_route')
 
 app.use('/api/users', userRouter)
 app.use('/api/bills', billRouter)
-app.use('/api/auth', authenticationRouter)
+app.use('/api/login', authenticationRouter)
 
 app.get('/',(req,res) => {
     res.send('<h1>ESPèCE DE PD</h1>')

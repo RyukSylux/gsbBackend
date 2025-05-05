@@ -1,44 +1,39 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
 const billSchema = new mongoose.Schema({
     date:{
-        type: String,
+        type: Date,
+        default: Date.now,
         required: true,
     },
     amount:{
         type: Number,
-        required : true,
+        required: true,
     },
     proof:{
         type: String,
-        required : true,
+        required: true,
     },
     description:{
         type: String,
-        required : true,
-        default : 'Aucune description'
-    },
-    user:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref : 'User',
+        default: 'Aucune description',
+        required: true,
     },
     status:{
         type: String,
-        required : true,
+        default: 'pending',
+        required: true,
     },
     createdAt:{
         type: Date,
-        default : Date.now,
-        required : true,
+        default: Date.now,
+        required: true,
     },
-})
-
-billSchema.pre('save', function(next) {
-    const existingBill = this.constructor.findOne({ id: this._id });
-    if (existingBill) {
-        throw new Error('Bill already exists');
-    }
-    next();
+    user:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+    },
 })
 
 const Bill = mongoose.model('Bill', billSchema)

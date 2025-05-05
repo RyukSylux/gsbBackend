@@ -1,6 +1,8 @@
 const mongoose = require('mongoose')
 const sha256 = require('js-sha256')
-const { JWT_SECRET } = process.env
+require('dotenv').config();
+
+const JWT_SALT = process.env.JWT_SALT || 'salt'
 
 const userSchema = new mongoose.Schema({
     name:{
@@ -32,31 +34,20 @@ const userSchema = new mongoose.Schema({
     }
 })
 
-userSchema.pre('save', function(next) {
-    try{
-   const existingUser = this.constructor.findOne({ email: this.email });
-   if (existingUser) {
-       throw new Error('Email already exists');
-   }
-
-   const secret = JWT_SECRET || "secret";
-   this.password = sha256(this.password + secret);
-    next();
-}catch (error) {
-        next(error);
-    }
-})
-
-userSchema.pre('findOneAndUpdate', function(next) {
-    const update = this.getUpdate();
-    if (update.email) {
-        const existingUser = this.constructor.findOne({ email: update.email });
+userSchema.pre('save', async function (next) {
+    try {
+        const existingUser = await this.constructor.findOne({ email: this.email });
         if (existingUser) {
-            throw new Error('Email already exists');
+            throw new Error('User already exists');
         }
+
+        const secret = JWT_SALT;
+        this.password = sha256(this.password + secret);
+        next();
+    } catch (error) {
+        next(error); 
     }
-    next();
-})
+});
 
 const User = mongoose.model('User', userSchema)
 

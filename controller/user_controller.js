@@ -61,9 +61,9 @@ const createUser = async(req, res) => {
         return res.status(201).json(user)
     } catch (error) {
         if (error.code === 'User already exists') {
-        return res.status(409).json({message: 'User already exists'})
+            return res.status(409).json({message: 'User already exists'})
         } else {
-           return res.status(500).json({message: "Server error"})
+            return res.status(500).json({message: "Server error"})
         }
     } 
 }

@@ -1,12 +1,16 @@
 const express = require('express')
 const router = express.Router()
-const { getBills, createBill, deleteBill } = require('../controller/bill_controller')
-const { authenticateUser } = require('../controller/authentification_controller')
+const { getBills, createBill, deleteBill, getBillsById, updateBill } = require('../controller/bill_controller')
+const { verifyToken } = require('../controller/authentification_controller')
 
-router.get('/', authenticateUser, getBills)
+router.get('/',verifyToken, getBills)
 
-router.post('/', authenticateUser, createBill)
+router.get('/:_id',verifyToken, getBillsById)
 
-router.delete('/:_bill', authenticateUser, deleteBill)
+router.post('/',verifyToken, createBill)
+
+router.delete('/:_bill',verifyToken, deleteBill)
+
+router.put('/:_id',verifyToken, updateBill)
 
 module.exports = router

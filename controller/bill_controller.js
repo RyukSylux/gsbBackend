@@ -1,38 +1,59 @@
-const Bill = require('../models/bill_model')
+const User = require('../models/bill_model')
 
-const getBills = async (req, res) => {
-    try{
-        const {id, role } = req.user
+const getBills = async(req,res) => {
+    try {
+    const {id, role} = req.user
         let bills
-        if (role === 'admin'){
-            bills = await Bill.find()
+        if(role === 'admin'){
+            bills = await User.find()
+            return res.json(bills)
         }
-        else {
-            bills = await Bill.find({user: id})
+        else{
+            bills = await User.find({user: id})
+            return res.json(bills)
         }
-        res.status(200).json(bills)
-    }catch (error) {
-            res.status(500).json({message: "Server error"})
-        }
-};
+    }
+    catch (error) {
+        res.status(500).json({message: error.message})
+    }
+}
 
+const getBillsById = async(req,res) => {
+    try{
+        const bill = await User.findOne({_id : req.params._id})
+        if(!bill){
+         res.status(404).json({message: 'Bill not found'})
+        }else{
+        res.json(bill)}}
+        catch (error) {
+             res.status(500).json({message: error.message})
+         }
+}
 
 const createBill = async(req, res) => {
-    try {
-        const { date, amount, description, status, type } = req.body
-        const {id} = req.user
     
-        const bill = new Bill({ date, amount, proof, description, user: id, status, type })
-        await bill.save()
-        res.status(201).json(bill)
+    try {
+        const {date, amount, description, proof, status} = req.body
+        const {id} = req.user
+        console.log(req.user)
+        const newBill = new User({
+            date,
+            amount,
+            description,
+            proof,
+            status,
+            user: id
+        })
+        await newBill.save()
+        res.status(201).json(newBill)
     } catch (error) {
-        res.status(500).json({message: error.message})
+        res.status(500).json({messacvge: error.message})
     } 
 }
 
 const deleteBill = async(req, res) => {
     try {
-        const bill = await Bill.findOneAndDelete({name : req.params._bill})
+        const bill = await User.findOneAndDelete({_id : req.params._id})
         if(!bill){
             res.status(404).json({message: 'Bill not found'})
         } else {
@@ -44,4 +65,17 @@ const deleteBill = async(req, res) => {
     }
 }
 
-module.exports = {getBills, createBill, deleteBill} //, getUsersByEmail, createUser, deleteUser}
+const updateBill = async(req, res) => {
+    try {
+        const user = await User.findOneAndUpdate({_id : req.params._id}, req.body, {new: true})
+        if(!user){
+            res.status(404).json({message: 'User not found'})
+        } else {
+            res.status(200).json(user)
+        }
+    }
+    catch (error) {
+        res.status(500).json({message: error.message})
+    }}
+
+module.exports = {getBills, createBill, deleteBill, updateBill, getBillsById}
