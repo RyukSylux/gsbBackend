@@ -3,8 +3,8 @@ const User = require('../models/user_model');
 const sha256 = require('js-sha256');
 require('dotenv').config();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'secretkey';
-const JWT_SALT = process.env.JWT_SALT || 'salt';
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
+const JWT_SALT = process.env.JWT_SALT || 'your_jwt_salt';
 const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '24h';
 
 const isAdmin = (req, res, next) => {
@@ -42,7 +42,7 @@ const isAdmin = (req, res, next) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
   
-    const token = jwt.sign({ id: user._id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRATION });
+    const token = jwt.sign({ id: user._id, email: user.email, role: user.role, description: user.description }, JWT_SECRET, { expiresIn: JWT_EXPIRATION });
     res.json({ token });
   
   }

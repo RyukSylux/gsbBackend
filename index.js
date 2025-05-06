@@ -3,9 +3,9 @@ const app = express()
 const port = 3000
 require('dotenv').config()
 
-const MONGO_URI = process.env.MONGO_URI || 'cluster0.q8tp4.mongodb.net/gsb'
-const MONGO_USER = process.env.MONGO_USER || 'ryuk'
-const MONGO_PASSWORD = process.env.MONGO_PASSWORD || 'ryuk'
+const MONGO_URI = process.env.MONGO_URI
+const MONGO_USER = process.env.MONGO_USER
+const MONGO_PASSWORD = process.env.MONGO_PASSWORD
 
 const mongoose = require('mongoose')
 mongoose.connect('mongodb+srv://'+MONGO_USER+':'+MONGO_PASSWORD+'@'+MONGO_URI)

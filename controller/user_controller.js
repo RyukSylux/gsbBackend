@@ -2,7 +2,8 @@ const User = require('../models/user_model')
 
 const getUsers = async(req,res) => {
     try {
-        const users = await User.find()
+        const email = req.query.email ? {email: req.query.email} : {}
+        const users = await User.find(email)
         res.json(users)
     }
     catch (error) {
@@ -13,8 +14,8 @@ const getUsers = async(req,res) => {
 const getUsersByEmail = async(req,res) => {
     try {
         // Check if the email query parameter is provided
-        const email = req.query.email ? {email: req.query.email} : {}
-        const users = await User.find(email)
+        const email = req.query.email
+        const users = await User.find({email})
         if(!users){
             throw new Error('User not found', {cause: 404})
         } else {
@@ -78,21 +79,4 @@ const deleteUser = async(req, res) => {
     }
 }
 
-const loginUser = async(req, res) => {
-    const { email, password } = req.body
-    try {
-        const user = await User.findOne({email, password})
-        if(!user){
-            res.status(401).json({message: 'Invalid email or password'})
-        } if (user.password !== sha256(password) + process.env.SALT) {
-            res.status(401).json({message: 'Invalid email or password'})
-        }
-        const token = jwt.sign({ id: user._id, role: user.role, email: user.email }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION });
-        res.status(200).json({ token });
-    }
-    catch (error) {
-        res.status(500).json({message: "Server error"})
-    }
-}
-
-module.exports = {getUsers, getUsersByEmail, createUser, updateUser, deleteUser, loginUser} //, getUsersByEmail, createUser, deleteUser}
+module.exports = {getUsers, getUsersByEmail, createUser, updateUser, deleteUser} //, getUsersByEmail, createUser, deleteUser}
