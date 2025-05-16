@@ -42,7 +42,7 @@ const isAdmin = (req, res, next) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
   
-    const token = jwt.sign({ id: user._id, email: user.email, role: user.role, description: user.description }, JWT_SECRET, { expiresIn: JWT_EXPIRATION });
+    const token = jwt.sign({ id: user._id, name: user.name, email: user.email, role: user.role, description: user.description }, JWT_SECRET, { expiresIn: JWT_EXPIRATION });
     res.json({ token });
   
   }

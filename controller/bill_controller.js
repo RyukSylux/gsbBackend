@@ -1,4 +1,5 @@
 const Bill = require('../models/bill_model')
+const { uploadToS3 } = require('../utils/s3')
 
 const getBills = async(req,res) => {
     try {
@@ -33,7 +34,7 @@ const getBillsById = async(req,res) => {
 const createBill = async(req, res) => {
     
     try {
-        const {date, amount, description, proof, status} = req.body
+        const {date, amount, description, status, type} = JSON.parse(req.body.metadata)
         const {id} = req.user
 
         let proofUrl = null
@@ -48,15 +49,16 @@ const createBill = async(req, res) => {
             date,
             amount,
             description,
-            proof,
+            proof : proofUrl,
             status,
+            type,
             user: id
         })
 
         await bill.save()
         res.status(201).json(bill)
     } catch (error) {
-        res.status(500).json({messacvge: error.message})
+        res.status(500).json({message: error.message})
     } 
 }
 

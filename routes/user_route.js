@@ -9,7 +9,7 @@ router.post('/', createUser)
 
 router.get('/:email', verifyToken, getUsersByEmail)
 
-router.delete('/:name', verifyToken, deleteUser)
+router.delete('/:email', verifyToken, deleteUser)
 
 router.put('/:email', verifyToken, updateUser)
 

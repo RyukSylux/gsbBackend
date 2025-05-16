@@ -1,6 +1,13 @@
 const express = require('express')
+const cors = require('cors');
 const app = express()
 const port = 3000
+
+app.use(cors({
+  origin: '*', // adapte selon ton frontend
+  credentials: true
+}));
+
 require('dotenv').config()
 
 const MONGO_URI = process.env.MONGO_URI

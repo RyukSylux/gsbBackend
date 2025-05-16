@@ -1,4 +1,9 @@
 const User = require('../models/user_model')
+const sha256 = require('js-sha256')
+require('dotenv').config();
+
+const JWT_SALT = process.env.JWT_SALT || 'salt'
+const secret = JWT_SALT;
 
 const getUsers = async(req,res) => {
     try {
@@ -33,25 +38,50 @@ const getUsersByEmail = async(req,res) => {
 
 const updateUser = async(req, res) => {
     try {
-        const { email } = req.query
-        const { name, newEmail, password, role } = req.body
-        const user = await User.findOneAndUpdate({email}, {name, email: newEmail, password, role}, {new: true})
-        if(!user){
-            res.status(404).json({message: 'User not found'})
+        const email = req.params.email;
+        const {currentPassword, newPassword, role, newEmail} = req.body;
+        
+        // Vérifier si l'utilisateur existe
+        const user = await User.findOne({ email: email });
+        if (!user) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
         }
-        else {
-            res.status(200).json(user)
+
+        // Si on veut changer le mot de passe, vérifier l'ancien
+        if (newPassword) {
+            // Hash du mot de passe actuel pour comparaison
+            const hashedCurrentPassword = sha256(currentPassword + JWT_SALT);
+            if (hashedCurrentPassword !== user.password) {
+                return res.status(401).json({ message: 'Mot de passe actuel incorrect' });
+            }
         }
+
+        // Préparer les données de mise à jour
+        const updateData = {
+            ...(role && { role }),
+            ...(newEmail && { email: newEmail })
+        };
+
+        // Si le mot de passe est correct et qu'un nouveau est fourni, le hasher
+        if (newPassword) {
+            updateData.password = sha256(newPassword + JWT_SALT);
+        }
+
+        // Mettre à jour l'utilisateur
+        const updatedUser = await User.findOneAndUpdate(
+            { email: email },
+            updateData,
+            { new: true }
+        );
+
+        // Ne pas renvoyer le mot de passe dans la réponse
+        const userResponse = updatedUser.toObject();
+        delete userResponse.password;
+        
+        res.status(200).json(userResponse);
     }
     catch (error) {
-        if (error.code === 'User already exists') {
-            res.status(409).json({message: 'User already exists'})
-        }
-        else if (error.name === 'ValidationError') {
-            res.status(400).json({message: 'Invalid data'})
-        } else {
-            res.status(500).json({message: "Server error"})
-        }
+        res.status(500).json({ message: error.message });
     }
 }
 
@@ -71,7 +101,7 @@ const createUser = async(req, res) => {
 
 const deleteUser = async(req, res) => {
     try {
-            const user = await User.findOneAndDelete({name : req.params.name})
+            const user = await User.findOneAndDelete({email : req.params.email})
             res.status(200).json({message: 'User deleted'})
         }
     catch (error) {
