@@ -1,6 +1,6 @@
 const Bill = require('../models/bill_model')
 const User = require('../models/user_model')
-const { uploadToS3 } = require('../utils/s3')
+const { uploadToS3, deleteFromS3 } = require('../utils/s3')
 
 const getBills = async(req,res) => {
     try {
@@ -72,10 +72,18 @@ const createBill = async(req, res) => {
 
 const deleteBill = async(req, res) => {
     try {
-        const bill = await Bill.findOneAndDelete({_id : req.params._id})
+        const bill = await Bill.findOneAndDelete(req.params._id)
         if(!bill){
             res.status(404).json({message: 'Bill not found'})
         } else {
+            // On supprime le fichier de preuve de S3
+            if (bill.proof) {
+                try {
+                    await deleteFromS3(bill.proof);
+                } catch (error) {
+                    console.error(`Erreur lors de la suppression du fichier S3 pour la facture ${bill._id}:`, error);
+                }
+            }
             res.status(200).json({message: 'Bill deleted'})
         }
     }
@@ -127,12 +135,27 @@ const updateBill = async(req, res) => {
 
 const deleteManyBills = async(req, res) => {
     try {
-        const { ids } = req.body; // Attend un tableau d'IDs dans le body
+        const { ids } = req.body;
 
         if (!Array.isArray(ids)) {
             return res.status(400).json({ message: 'Les IDs doivent être fournis dans un tableau' });
         }
 
+        // Récupérer d'abord toutes les factures pour avoir les URLs des preuves
+        const bills = await Bill.find({ _id: { $in: ids } });
+        
+        // Supprimer les fichiers dans S3
+        for (const bill of bills) {
+            if (bill.proof) {
+                try {
+                    await deleteFromS3(bill.proof);
+                } catch (error) {
+                    console.error(`Erreur lors de la suppression du fichier S3 pour la facture ${bill._id}:`, error);
+                }
+            }
+        }
+
+        // Supprimer les factures de la base de données
         const result = await Bill.deleteMany({ _id: { $in: ids } });
 
         if (result.deletedCount === 0) {

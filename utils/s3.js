@@ -29,4 +29,23 @@ const uploadToS3 = async (file) => {
     }
 }
 
-module.exports = { uploadToS3}
+const deleteFromS3 = async (fileUrl) => {
+    try {
+        // Extraire le nom du fichier de l'URL
+        const key = fileUrl.split('/').pop();
+        
+        const params = {
+            Bucket: BUCKET_NAME,
+            Key: key
+        };
+
+        await s3.deleteObject(params).promise();
+        console.log("File deleted successfully from S3:", key);
+        return true;
+    } catch (error) {
+        console.error("Error deleting file from S3:", error);
+        throw new Error("Failed to delete file from S3");
+    }
+}
+
+module.exports = { uploadToS3, deleteFromS3 }
