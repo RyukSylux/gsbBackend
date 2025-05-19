@@ -1,15 +1,23 @@
 const Bill = require('../models/bill_model')
+const User = require('../models/user_model')
 const { uploadToS3 } = require('../utils/s3')
 
 const getBills = async(req,res) => {
     try {
-    const {id, role} = req.user
+        const {id, role} = req.user
         let bills
         if(role === 'admin'){
-            bills = await Bill.find()
-            return res.json(bills)
-        }
-        else{
+            bills = await Bill.find({})
+            const billsWithEmail = await Promise.all(bills.map(async (bill) => {
+                const user = await User.findOne({_id: bill.user}, {_id: 0, email: 1, name: 1})
+                return {
+                    ...bill.toObject(),
+                    email: user ? user.email : null,
+                    name: user ? user.name : null
+                }
+            }))
+            return res.json(billsWithEmail)
+        } else {
             bills = await Bill.find({user: id})
             return res.json(bills)
         }
@@ -72,21 +80,74 @@ const deleteBill = async(req, res) => {
         }
     }
     catch (error) {
+        console.log('Erreur lors de la suppression:', error);
         res.status(500).json({message: error.message})
     }
 }
 
 const updateBill = async(req, res) => {
     try {
-        const user = await Bill.findOneAndUpdate({_id : req.params._id}, req.body, {new: true})
-        if(!user){
-            res.status(404).json({message: 'User not found'})
-        } else {
-            res.status(200).json(user)
+
+        const existingBill = await Bill.findById(req.params._id);
+        if (!existingBill) {
+            return res.status(404).json({message: 'Facture non trouvée'});
         }
+
+        // On parse les metadata comme dans createBill
+        const {date, amount, description, status, type} = JSON.parse(req.body.metadata);
+        
+        // On prépare l'objet de mise à jour
+        const updateFields = {
+            date,
+            amount,
+            description,
+            status,
+            type
+        };
+
+        // Si on a un nouveau fichier, on l'upload sur S3
+        if (req.file) {
+            const proofUrl = await uploadToS3(req.file);
+            updateFields.proof = proofUrl;
+        }
+
+        const updatedBill = await Bill.findByIdAndUpdate(
+            req.params._id,
+            { $set: updateFields },
+            { new: true }
+        );
+
+        res.status(200).json(updatedBill);
     }
     catch (error) {
-        res.status(500).json({message: error.message})
-    }}
+        console.error('Erreur lors de la mise à jour:', error);
+        res.status(500).json({message: error.message});
+    }
+}
 
-module.exports = {getBills, createBill, deleteBill, updateBill, getBillsById}
+const deleteManyBills = async(req, res) => {
+    try {
+        const { ids } = req.body; // Attend un tableau d'IDs dans le body
+
+        if (!Array.isArray(ids)) {
+            return res.status(400).json({ message: 'Les IDs doivent être fournis dans un tableau' });
+        }
+
+        const result = await Bill.deleteMany({ _id: { $in: ids } });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ message: 'Aucune facture trouvée' });
+        }
+
+        res.status(200).json({
+            message: `${result.deletedCount} factures ont été supprimées avec succès`,
+            deletedCount: result.deletedCount
+        });
+    }
+    catch (error) {
+        console.error('Erreur lors de la suppression multiple:', error);
+        res.status(500).json({ message: error.message });
+    }
+}
+
+module.exports = {getBills, createBill, deleteBill, updateBill, getBillsById, deleteManyBills}

@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { getBills, createBill, deleteBill, getBillsById, updateBill } = require('../controller/bill_controller')
+const { getBills, createBill, deleteBill, getBillsById, updateBill, deleteManyBills } = require('../controller/bill_controller')
 const { verifyToken } = require('../controller/authentification_controller')
 const upload = require('../middleware/upload')
 
@@ -10,8 +10,10 @@ router.get('/:_id',verifyToken, getBillsById)
 
 router.post('/',verifyToken, upload.single('proof'), createBill)
 
+router.delete('/many', verifyToken, deleteManyBills)
+
 router.delete('/:_bill',verifyToken, deleteBill)
 
-router.put('/:_id',verifyToken, updateBill)
+router.put('/:_id',verifyToken,upload.single('proof'), updateBill)
 
 module.exports = router
