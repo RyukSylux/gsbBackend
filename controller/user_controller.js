@@ -3,7 +3,6 @@ const sha256 = require('js-sha256')
 require('dotenv').config();
 
 const JWT_SALT = process.env.JWT_SALT || 'salt'
-const secret = JWT_SALT;
 
 const getUsers = async(req,res) => {
     try {
@@ -39,7 +38,8 @@ const getUsersByEmail = async(req,res) => {
 const updateUser = async(req, res) => {
     try {
         const email = req.params.email;
-        const {currentPassword, newPassword, role, newEmail} = req.body;
+        const {currentPassword, newPassword, role, newEmail, name, description} = req.body;
+        const isAdmin = req.user.role === 'admin'; // On récupère le rôle de l'utilisateur qui fait la requête
         
         // Vérifier si l'utilisateur existe
         const user = await User.findOne({ email: email });
@@ -47,8 +47,8 @@ const updateUser = async(req, res) => {
             return res.status(404).json({ message: 'Utilisateur non trouvé' });
         }
 
-        // Si on veut changer le mot de passe, vérifier l'ancien
-        if (newPassword) {
+        // Si l'utilisateur n'est pas admin et qu'il veut changer le mot de passe, vérifier l'ancien
+        if (newPassword && !isAdmin) {
             // Hash du mot de passe actuel pour comparaison
             const hashedCurrentPassword = sha256(currentPassword + JWT_SALT);
             if (hashedCurrentPassword !== user.password) {
@@ -59,10 +59,12 @@ const updateUser = async(req, res) => {
         // Préparer les données de mise à jour
         const updateData = {
             ...(role && { role }),
-            ...(newEmail && { email: newEmail })
+            ...(newEmail && { email: newEmail }),
+            ...(name && { name }),
+            ...(description && { description })
         };
 
-        // Si le mot de passe est correct et qu'un nouveau est fourni, le hasher
+        // Si un nouveau mot de passe est fourni, le hasher
         if (newPassword) {
             updateData.password = sha256(newPassword + JWT_SALT);
         }
