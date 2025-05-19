@@ -20,14 +20,9 @@ const uploadToS3 = async (file) => {
             Key: key,
             Body: file.buffer
         };
-        s3.upload(params, function(uploadErr, uploadData) {
-            if (uploadErr) {
-                throw uploadErr
-            } else {
-                console.log("File uploaded successfully:", uploadData.Location);
-                return uploadData.Location;
-            }
-        });
+       const uploadData = await s3.upload(params).promise();
+       console.log("File uploaded successfully at", uploadData.Location);
+       return uploadData.Location; // Return the URL of the uploaded file
     } catch (error) {
         console.error("Error uploading file to S3:", error);
         throw new Error("Failed to upload file to S3");

@@ -2,8 +2,7 @@ const mongoose = require('mongoose')
 
 const billSchema = new mongoose.Schema({
     date:{
-        type: Date,
-        default: Date.now,
+        type: String,
         required: true,
     },
     amount:{
