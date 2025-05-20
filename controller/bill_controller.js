@@ -72,24 +72,32 @@ const createBill = async(req, res) => {
 
 const deleteBill = async(req, res) => {
     try {
-        const bill = await Bill.findOneAndDelete(req.params._id)
-        if(!bill){
-            res.status(404).json({message: 'Bill not found'})
-        } else {
-            // On supprime le fichier de preuve de S3
-            if (bill.proof) {
-                try {
-                    await deleteFromS3(bill.proof);
-                } catch (error) {
-                    console.error(`Erreur lors de la suppression du fichier S3 pour la facture ${bill._id}:`, error);
-                }
-            }
-            res.status(200).json({message: 'Bill deleted'})
+        if (!req.params._bill || !req.params._bill.match(/^[0-9a-fA-F]{24}$/)) {
+            return res.status(400).json({message: 'ID de facture invalide'});
         }
+
+        const bill = await Bill.findByIdAndDelete(req.params._bill);  // On utilise _bill
+        
+        if(!bill) {
+            return res.status(404).json({message: 'Bill not found'});
+        }
+
+        // On supprime le fichier de preuve de S3
+        if (bill.proof) {
+            try {
+                await deleteFromS3(bill.proof);
+            } catch (error) {
+                console.error(`Erreur lors de la suppression du fichier S3 pour la facture ${bill._id}:`, error);
+            }
+        }
+
+        res.status(200).json({
+            message: 'Bill deleted',
+            deletedBill: bill._id
+        });
     }
     catch (error) {
-        console.log('Erreur lors de la suppression:', error);
-        res.status(500).json({message: error.message})
+        res.status(500).json({message: error.message});
     }
 }
 
