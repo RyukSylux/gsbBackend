@@ -1,0 +1,47 @@
+{
+    "source": {
+        "include": ["./controller", "./models", "./routes", "./utils", "./middleware"],
+        "includePattern": ".+\\.js$",
+        "exclude": ["node_modules", "docs"]
+    },
+    "plugins": ["plugins/markdown"],
+    "opts": {
+        "encoding": "utf8",
+        "destination": "./docs/",
+        "recurse": true,
+        "verbose": true,
+        "readme": "./readme.md",
+        "template": "node_modules/clean-jsdoc-theme"
+    },
+    "templates": {
+        "cleverLinks": true,
+        "monospaceLinks": false,
+        "default": {
+            "outputSourceFiles": true
+        },
+        "clean-jsdoc-theme": {
+            "name": "GSB Backend API",
+            "title": "GSB Backend Documentation",
+            "theme": "dark",
+            "menu": {
+                "Github": {
+                    "href": "https://github.com/votre-username/gsbBackend",
+                    "target": "_blank",
+                    "class": "menu-item",
+                    "id": "github_link"
+                }
+            },
+            "meta": {
+                "title": "GSB Backend API Documentation",
+                "description": "Documentation de l'API backend GSB",
+                "keyword": "docs, api, backend, gsb"
+            },
+            "codepen": true,
+            "search": true,
+            "collapse": true
+        }
+    },
+    "tags": {
+        "allowUnknownTags": true
+    }
+}
