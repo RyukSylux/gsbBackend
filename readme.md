@@ -28,10 +28,20 @@ npm start
 
 ## Documentation API
 
-La documentation complète de l'API est disponible dans le dossier `docs/`. Pour la générer :
+La documentation complète de l'API est disponible :
+- En ligne : [https://ryuksylux.github.io/gsbBackend/](https://ryuksylux.github.io/gsbBackend/)
+- En local : dans le dossier `docs/` après génération
+
+Pour générer la documentation en local :
 
 ```bash
 npm run docs
+```
+
+Pour déployer la documentation sur GitHub Pages :
+
+```bash
+npm run docs:deploy
 ```
 
 ## Endpoints Principaux
