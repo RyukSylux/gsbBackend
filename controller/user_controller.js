@@ -1,9 +1,24 @@
+/**
+ * @fileoverview Contrôleur pour la gestion des utilisateurs
+ * @module controllers/user
+ */
+
 const User = require('../models/user_model')
 const sha256 = require('js-sha256')
 require('dotenv').config();
 
 const JWT_SALT = process.env.JWT_SALT || 'salt'
 
+/**
+ * Récupère tous les utilisateurs ou filtre par email
+ * @async
+ * @function getUsers
+ * @param {Object} req - Requête Express
+ * @param {Object} req.query - Paramètres de requête
+ * @param {string} [req.query.email] - Email optionnel pour filtrer les utilisateurs
+ * @param {Object} res - Réponse Express
+ * @returns {Promise<void>} - Renvoie la liste des utilisateurs
+ */
 const getUsers = async(req,res) => {
     try {
         const email = req.query.email ? {email: req.query.email} : {}
@@ -15,6 +30,16 @@ const getUsers = async(req,res) => {
     }
 }
 
+/**
+ * Récupère un utilisateur par son email
+ * @async
+ * @function getUsersByEmail
+ * @param {Object} req - Requête Express
+ * @param {Object} req.query - Paramètres de requête
+ * @param {string} req.query.email - Email de l'utilisateur à rechercher
+ * @param {Object} res - Réponse Express
+ * @returns {Promise<void>} - Renvoie l'utilisateur trouvé
+ */
 const getUsersByEmail = async(req,res) => {
     try {
         // Check if the email query parameter is provided
@@ -35,6 +60,23 @@ const getUsersByEmail = async(req,res) => {
     }
 }
 
+/**
+ * Met à jour les informations d'un utilisateur
+ * @async
+ * @function updateUser
+ * @param {Object} req - Requête Express
+ * @param {Object} req.params - Paramètres de route
+ * @param {string} req.params.email - Email de l'utilisateur à mettre à jour
+ * @param {Object} req.body - Données de mise à jour
+ * @param {string} [req.body.currentPassword] - Mot de passe actuel (requis pour non-admin)
+ * @param {string} [req.body.newPassword] - Nouveau mot de passe
+ * @param {string} [req.body.role] - Nouveau rôle
+ * @param {string} [req.body.newEmail] - Nouvel email
+ * @param {string} [req.body.name] - Nouveau nom
+ * @param {string} [req.body.description] - Nouvelle description
+ * @param {Object} res - Réponse Express
+ * @returns {Promise<void>} - Renvoie l'utilisateur mis à jour
+ */
 const updateUser = async(req, res) => {
     try {
         const email = req.params.email;
@@ -87,6 +129,16 @@ const updateUser = async(req, res) => {
     }
 }
 
+/**
+ * Crée un nouvel utilisateur
+ * @async
+ * @function createUser
+ * @param {Object} req - Requête Express
+ * @param {Object} req.body - Données du nouvel utilisateur
+ * @param {Object} res - Réponse Express
+ * @returns {Promise<void>} - Renvoie l'utilisateur créé
+ * @throws {Error} - Erreur si l'utilisateur existe déjà
+ */
 const createUser = async(req, res) => {
     const newUser = req.body
     try {
@@ -101,6 +153,16 @@ const createUser = async(req, res) => {
     } 
 }
 
+/**
+ * Supprime un utilisateur par son email
+ * @async
+ * @function deleteUser
+ * @param {Object} req - Requête Express
+ * @param {Object} req.params - Paramètres de route
+ * @param {string} req.params.email - Email de l'utilisateur à supprimer
+ * @param {Object} res - Réponse Express
+ * @returns {Promise<void>} - Renvoie un message de confirmation
+ */
 const deleteUser = async(req, res) => {
     try {
             const user = await User.findOneAndDelete({email : req.params.email})
@@ -111,4 +173,4 @@ const deleteUser = async(req, res) => {
     }
 }
 
-module.exports = {getUsers, getUsersByEmail, createUser, updateUser, deleteUser} //, getUsersByEmail, createUser, deleteUser}
+module.exports = {getUsers, getUsersByEmail, createUser, updateUser, deleteUser}

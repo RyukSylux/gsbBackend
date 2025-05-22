@@ -1,9 +1,26 @@
+/**
+ * @fileoverview Modèle Mongoose pour les utilisateurs
+ * @module models/user
+ */
+
 const mongoose = require('mongoose')
 const sha256 = require('js-sha256')
 require('dotenv').config();
 
+/**
+ * @constant {string} JWT_SALT - Sel utilisé pour le hachage des mots de passe
+ */
 const JWT_SALT = process.env.JWT_SALT || 'salt'
 
+/**
+ * Schéma Mongoose pour les utilisateurs
+ * @typedef {Object} UserSchema
+ * @property {string} name - Nom de l'utilisateur
+ * @property {string} email - Email de l'utilisateur (unique)
+ * @property {string} description - Description de l'utilisateur
+ * @property {string} password - Mot de passe hashé de l'utilisateur
+ * @property {string} role - Rôle de l'utilisateur ('user' ou 'admin')
+ */
 const userSchema = new mongoose.Schema({
     name:{
         type: String,

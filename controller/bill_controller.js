@@ -1,7 +1,24 @@
+/**
+ * @fileoverview Contrôleur gérant les opérations CRUD sur les factures
+ * @module controllers/bill
+ */
+
 const Bill = require('../models/bill_model')
 const User = require('../models/user_model')
 const { uploadToS3, deleteFromS3 } = require('../utils/s3')
 
+/**
+ * Récupère toutes les factures
+ * @function getBills
+ * @async
+ * @param {Object} req - L'objet requête Express
+ * @param {Object} req.user - L'utilisateur authentifié
+ * @param {string} req.user.id - L'ID de l'utilisateur
+ * @param {string} req.user.role - Le rôle de l'utilisateur
+ * @param {Object} res - L'objet réponse Express
+ * @returns {Promise<Object[]>} Liste des factures
+ * @throws {Error} Erreur lors de la récupération des factures
+ */
 const getBills = async(req,res) => {
     try {
         const {id, role} = req.user
@@ -27,6 +44,17 @@ const getBills = async(req,res) => {
     }
 }
 
+/**
+ * Récupère une facture par son ID
+ * @function getBillsById
+ * @async
+ * @param {Object} req - L'objet requête Express
+ * @param {Object} req.params - Les paramètres de la requête
+ * @param {string} req.params._id - L'ID de la facture
+ * @param {Object} res - L'objet réponse Express
+ * @returns {Promise<Object>} La facture trouvée
+ * @throws {Error} Erreur si la facture n'est pas trouvée
+ */
 const getBillsById = async(req,res) => {
     try{
         const bill = await Bill.findOne({_id : req.params._id})
@@ -39,6 +67,25 @@ const getBillsById = async(req,res) => {
          }
 }
 
+/**
+ * Crée une nouvelle facture
+ * @function createBill
+ * @async
+ * @param {Object} req - L'objet requête Express
+ * @param {Object} req.body - Le corps de la requête
+ * @param {Object} req.body.metadata - Les métadonnées de la facture
+ * @param {string} req.body.metadata.date - La date de la facture
+ * @param {number} req.body.metadata.amount - Le montant de la facture
+ * @param {string} req.body.metadata.description - La description de la facture
+ * @param {string} req.body.metadata.status - Le statut de la facture
+ * @param {string} req.body.metadata.type - Le type de la facture
+ * @param {Object} req.file - Le fichier justificatif
+ * @param {Object} req.user - L'utilisateur authentifié
+ * @param {string} req.user.id - L'ID de l'utilisateur
+ * @param {Object} res - L'objet réponse Express
+ * @returns {Promise<Object>} La facture créée
+ * @throws {Error} Erreur lors de la création de la facture
+ */
 const createBill = async(req, res) => {
     
     try {
@@ -70,6 +117,17 @@ const createBill = async(req, res) => {
     } 
 }
 
+/**
+ * Supprime une facture
+ * @function deleteBill
+ * @async
+ * @param {Object} req - L'objet requête Express
+ * @param {Object} req.params - Les paramètres de la requête
+ * @param {string} req.params._id - L'ID de la facture à supprimer
+ * @param {Object} res - L'objet réponse Express
+ * @returns {Promise<Object>} Message de confirmation
+ * @throws {Error} Erreur lors de la suppression
+ */
 const deleteBill = async(req, res) => {
     try {
         if (!req.params._bill || !req.params._bill.match(/^[0-9a-fA-F]{24}$/)) {
@@ -101,6 +159,20 @@ const deleteBill = async(req, res) => {
     }
 }
 
+/**
+ * Met à jour une facture
+ * @function updateBill
+ * @async
+ * @param {Object} req - L'objet requête Express
+ * @param {Object} req.params - Les paramètres de la requête
+ * @param {string} req.params._id - L'ID de la facture à mettre à jour
+ * @param {Object} req.body - Le corps de la requête
+ * @param {Object} req.body.metadata - Les métadonnées de la facture
+ * @param {Object} req.file - Le nouveau fichier justificatif (optionnel)
+ * @param {Object} res - L'objet réponse Express
+ * @returns {Promise<Object>} La facture mise à jour
+ * @throws {Error} Erreur lors de la mise à jour
+ */
 const updateBill = async(req, res) => {
     try {
 
@@ -141,6 +213,17 @@ const updateBill = async(req, res) => {
     }
 }
 
+/**
+ * Supprime plusieurs factures
+ * @function deleteManyBills
+ * @async
+ * @param {Object} req - L'objet requête Express
+ * @param {Object} req.body - Le corps de la requête
+ * @param {string[]} req.body.ids - Liste des IDs des factures à supprimer
+ * @param {Object} res - L'objet réponse Express
+ * @returns {Promise<Object>} Résultat de la suppression
+ * @throws {Error} Erreur lors de la suppression multiple
+ */
 const deleteManyBills = async(req, res) => {
     try {
         const { ids } = req.body;
