@@ -12,13 +12,12 @@ const mongoose = require('mongoose')
  * @property {number} amount - Montant de la facture
  * @property {string} description - Description de la facture
  * @property {string} proof - URL du justificatif dans S3
- * @property {string} status - Statut de la facture ('En attente', 'Validé', 'Refusé')
- * @property {string} type - Type de la facture ('Restaurant', 'Transport', etc.)
+ * @property {string} status - Statut de la facture ('pending', 'paid', 'not paid')
  * @property {mongoose.Schema.Types.ObjectId} user - Référence vers l'utilisateur
  */
 const billSchema = new mongoose.Schema({
     date: {
-        type: Date,
+        type: String,
         required: true
     },
     amount: {
@@ -27,6 +26,7 @@ const billSchema = new mongoose.Schema({
     },
     description: {
         type: String,
+        default: 'Aucune description',
         required: true
     },
     proof: {
@@ -36,13 +36,7 @@ const billSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
-        enum: ['En attente', 'Validé', 'Refusé'],
-        default: 'En attente'
-    },
-    type: {
-        type: String,
-        required: true,
-        enum: ['Restaurant', 'Transport', 'Hébergement', 'Formation', 'Autre']
+        default: 'pending'
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,
