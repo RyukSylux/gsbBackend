@@ -87,7 +87,6 @@ const getBillsById = async(req,res) => {
  * @throws {Error} Erreur lors de la création de la facture
  */
 const createBill = async(req, res) => {
-    
     try {
         const {date, amount, description, status, type} = JSON.parse(req.body.metadata)
         const {id} = req.user
@@ -97,7 +96,7 @@ const createBill = async(req, res) => {
         {
             proofUrl = await uploadToS3(req.file)
         } else {
-            throw new Error('Proof file is required', {cause: 400})
+            throw new Error('Proof file is required', {cause: 400});
         }
         
         const bill = new Bill({

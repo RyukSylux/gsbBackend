@@ -27,16 +27,21 @@ const billSchema = new mongoose.Schema({
     description: {
         type: String,
         default: 'Aucune description',
-        required: true
+    },
+    createdAt:{
+        type: Date,
+        default : Date.now,
+        required : true,
     },
     proof: {
         type: String,
         required: true
-    },
+    },    
     status: {
         type: String,
         required: true,
-        default: 'pending'
+        default: 'pending',
+        enum: ['pending', 'not-paid', 'paid']
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,

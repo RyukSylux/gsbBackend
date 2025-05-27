@@ -4,6 +4,8 @@
  */
 
 const User = require('../models/user_model')
+const Bill = require('../models/bill_model')
+const { deleteFromS3 } = require('../utils/s3')
 const sha256 = require('js-sha256')
 require('dotenv').config();
 
@@ -139,15 +141,25 @@ const updateUser = async(req, res) => {
  * @returns {Promise<void>} - Renvoie l'utilisateur créé
  * @throws {Error} - Erreur si l'utilisateur existe déjà
  */
-const createUser = async(req, res) => {
-    const newUser = req.body
+const createUser = async(req, res) => {    
     try {
+        // On récupère les données du body mais on force le rôle à 'user'
+        const { role, ...userData } = req.body
+        const newUser = {
+            ...userData,
+            role: 'user' // Force le rôle à 'user' peu importe ce qui est envoyé
+        }
+        
         const user = await User.create(newUser)
-        return res.status(201).json(user)
+        // On ne renvoie pas le mot de passe dans la réponse
+        const userResponse = user.toObject()
+        delete userResponse.password
+        return res.status(201).json(userResponse)
     } catch (error) {
         if (error.code === 'User already exists') {
             return res.status(409).json({message: 'User already exists'})
         } else {
+            console.log('Erreur lors de la création de l\'utilisateur:', error)
             return res.status(500).json({message: "Server error"})
         }
     } 
@@ -165,10 +177,39 @@ const createUser = async(req, res) => {
  */
 const deleteUser = async(req, res) => {
     try {
-            const user = await User.findOneAndDelete({email : req.params.email})
-            res.status(200).json({message: 'User deleted'})
+        // D'abord, on trouve l'utilisateur pour avoir son ID
+        const user = await User.findOne({email: req.params.email})
+        if (!user) {
+            return res.status(404).json({message: 'Utilisateur non trouvé'})
         }
+
+        // Récupérer toutes les factures de l'utilisateur pour avoir les URLs des preuves
+        const bills = await Bill.find({user: user._id})
+        
+        // Supprimer les fichiers dans S3
+        for (const bill of bills) {
+            if (bill.proof) {
+                try {
+                    await deleteFromS3(bill.proof)
+                } catch (error) {
+                    console.error(`Erreur lors de la suppression du fichier S3 pour la facture ${bill._id}:`, error)
+                }
+            }
+        }
+
+        // Supprimer toutes les factures associées à l'utilisateur
+        await Bill.deleteMany({user: user._id})
+
+        // Ensuite, on supprime l'utilisateur
+        await User.findOneAndDelete({email: req.params.email})
+        
+        res.status(200).json({
+            message: 'Utilisateur et factures associées supprimés avec succès',
+            deletedBillsCount: bills.length
+        })
+    }
     catch (error) {
+        console.error('Erreur lors de la suppression:', error)
         res.status(500).json({message: "Server error"})
     }
 }

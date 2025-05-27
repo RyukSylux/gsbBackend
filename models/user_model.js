@@ -31,11 +31,6 @@ const userSchema = new mongoose.Schema({
         required : true,
         unique: true,
     },
-    description:{
-        type: String,
-        required : true,
-        default : 'Aucune description'
-    },
     password:{
         type: String,
         required : true,
@@ -44,10 +39,11 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default : Date.now,
         required : true,
-    },
+    },      
     role:{
         type: String,
-        required : true,
+        default: 'user',
+        enum: ['admin', 'commercial', 'user']
     }
 })
 
