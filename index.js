@@ -42,6 +42,7 @@ app.use(express.json())
 const userRouter = require('./routes/user_route')
 const billRouter = require('./routes/bill_route')
 const authenticationRouter = require('./routes/authentication_route')
+const magicLinkRouter = require('./routes/magicLink_route')
 
 /**
  * Configuration des routes de l'API
@@ -49,6 +50,7 @@ const authenticationRouter = require('./routes/authentication_route')
 app.use('/api/users', userRouter)
 app.use('/api/bills', billRouter)
 app.use('/api/login', authenticationRouter)
+app.use('/api/magic', magicLinkRouter)
 
 /**
  * Route racine
