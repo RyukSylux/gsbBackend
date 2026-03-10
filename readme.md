@@ -35,6 +35,7 @@ This project is the backend API for the GSB (Gestion de Suivi des Bordereaux) ap
 - **MongoDB**: NoSQL database for storing users and bills
 - **Mongoose**: ODM for MongoDB, providing schema and validation
 - **JWT (jsonwebtoken)**: Secure authentication and authorization
+- **js-sha256**: Library for secure password hashing
 - **Multer**: Middleware for handling file uploads
 - **AWS SDK**: Used for uploading and deleting files on Amazon S3
 - **dotenv**: Loads environment variables from a `.env` file
@@ -102,6 +103,24 @@ The API will be available at `http://localhost:3000` by default (or the port spe
 
 ---
 
+## Test Credentials
+
+The following accounts can be used for testing the application:
+
+### Administrator
+- **Email**: test@gmail.com
+- **Password**: test
+
+### Standard User
+- **Email**: hugo@gmail.com
+- **Password**: hugo
+
+### Commercial
+- **Email**: pablito@gmail.com
+- **Password**: pablito1
+
+---
+
 ## API Documentation
 - Online: [https://ryuksylux.github.io/gsbBackend/](https://ryuksylux.github.io/gsbBackend/)
 - Local: After generating docs, open the `docs/` folder
@@ -110,7 +129,7 @@ To generate documentation locally:
 ```bash
 npm run docs
 ```
-To deploy documentation to GitHub Pages:
+To deploy documentation to GitHub Pages (requires PowerShell and Git):
 ```bash
 npm run docs:deploy
 ```
@@ -140,7 +159,3 @@ AWS_BUCKET_NAME=your_s3_bucket_name
 
 **Do not commit your `.env` file to version control.**
 
----
-
-## License
-This project is licensed under the ISC License.
