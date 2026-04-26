@@ -1,71 +1,73 @@
-# GSB Backend API (English)
+# API Backend GSB
 
-## Project Overview
-This project is the backend API for the GSB (Gestion de Suivi des Bordereaux) application, developed as part of the E5 exam for the BTS SIO SLAM track. It provides endpoints for user management, bill (expense report) management, and authentication, using modern web technologies and best practices.
+## Présentation du Projet
+Ce projet constitue l'API backend de l'application GSB (Galaxy Swiss Bourdin), développée dans le cadre de l'épreuve E6 du BTS SIO, option SLAM. Il fournit les points d'accès (endpoints) pour la gestion des utilisateurs, la gestion des notes de frais, et l'authentification, en utilisant des technologies web modernes et les bonnes pratiques.
+
+## Dépôt Frontend
+Le code source de l'interface frontend de ce projet est disponible ici : [RyukSylux/gsbFront](https://github.com/RyukSylux/gsbFront).
 
 ---
 
-## Table of Contents
-- [Features](#features)
-- [Technologies Used](#technologies-used)
-- [Project Structure](#project-structure)
+## Table des Matières
+- [Fonctionnalités](#fonctionnalités)
+- [Technologies Utilisées](#technologies-utilisées)
+- [Structure du Projet](#structure-du-projet)
 - [Installation](#installation)
 - [Configuration](#configuration)
-- [Running the Project](#running-the-project)
-- [API Documentation](#api-documentation)
-- [Main Endpoints](#main-endpoints)
-- [Environment Variables](#environment-variables)
-- [License](#license)
+- [Lancement du Projet](#lancement-du-projet)
+- [Documentation de l'API](#documentation-de-lapi)
+- [Endpoints Principaux](#endpoints-principaux)
+- [Variables d'Environnement](#variables-denvironnement)
 
 ---
 
-## Features
-- User registration, authentication, and management
-- Bill (expense report) creation, retrieval, update, and deletion
-- File upload for bill proofs (stored on AWS S3)
-- Secure authentication with JWT
-- RESTful API structure
-- API documentation generation with JSDoc
+## Fonctionnalités
+- Inscription, authentification et gestion des utilisateurs
+- Création, consultation, modification et suppression des notes de frais
+- Téléchargement de justificatifs (stockés sur AWS S3)
+- Authentification sécurisée avec JWT
+- Structure d'API RESTful
+- Génération de la documentation de l'API avec JSDoc
 
 ---
 
-## Technologies Used
-- **Node.js**: JavaScript runtime for server-side development
-- **Express**: Web framework for building REST APIs
-- **MongoDB**: NoSQL database for storing users and bills
-- **Mongoose**: ODM for MongoDB, providing schema and validation
-- **JWT (jsonwebtoken)**: Secure authentication and authorization
-- **js-sha256**: Library for secure password hashing
-- **Multer**: Middleware for handling file uploads
-- **AWS SDK**: Used for uploading and deleting files on Amazon S3
-- **dotenv**: Loads environment variables from a `.env` file
-- **JSDoc**: Generates API documentation from code comments
-- **CORS**: Enables secure cross-origin requests
+## Technologies Utilisées
+- **Node.js** : Environnement d'exécution JavaScript côté serveur
+- **Express** : Framework web pour la création d'API REST
+- **MongoDB** : Base de données NoSQL pour stocker utilisateurs et notes de frais
+- **Mongoose** : ODM pour MongoDB, gérant les schémas et la validation
+- **JWT (jsonwebtoken)** : Sécurisation de l'authentification et des autorisations
+- **js-sha256** : Bibliothèque de hachage sécurisé des mots de passe
+- **Multer** : Middleware pour la gestion des téléchargements de fichiers
+- **AWS SDK** : Utilisé pour le transfert et la suppression de fichiers sur Amazon S3
+- **dotenv** : Chargement des variables d'environnement depuis un fichier `.env`
+- **JSDoc** : Génération de documentation à partir des commentaires du code
+- **CORS** : Autorisation sécurisée des requêtes cross-origin
 
 ---
 
-## Project Structure
-```
-├── controller/    # Application controllers (business logic)
-├── models/        # Data models (Mongoose schemas)
-├── routes/        # API routes
-├── middleware/    # Express middlewares
-├── utils/         # Utility functions (e.g., S3 upload)
-├── docs/          # Generated API documentation
-├── index.js       # Main entry point
-├── package.json   # Project dependencies and scripts
-├── .env           # Environment variables (not committed)
+## Structure du Projet
+```text
+├── controller/    # Contrôleurs de l'application (logique métier)
+├── models/        # Modèles de données (schémas Mongoose)
+├── routes/        # Routes de l'API
+├── middleware/    # Middlewares Express
+├── utils/         # Fonctions utilitaires (ex: upload S3)
+├── docs/          # Documentation de l'API générée
+├── index.js       # Point d'entrée principal
+├── package.json   # Dépendances et scripts du projet
+├── .env           # Variables d'environnement (non versionné)
 ```
 
 ---
 
 ## Installation
-1. Clone the repository:
+1. Cloner le dépôt :
    ```bash
    git clone https://github.com/RyukSylux/gsbBackend.git
    cd gsbBackend
    ```
-2. Install dependencies:
+2. Installer les dépendances :
    ```bash
    npm install
    ```
@@ -73,89 +75,77 @@ This project is the backend API for the GSB (Gestion de Suivi des Bordereaux) ap
 ---
 
 ## Configuration
-Before running the project, create a `.env` file at the root of the project with the following variables:
+Avant de lancer le projet, créez un fichier `.env` à la racine du projet en vous basant sur le fichier `.env.example` :
 
 ```env
-MONGO_URI=your_mongodb_uri
-MONGO_USER=your_mongodb_user
-MONGO_PASSWORD=your_mongodb_password
-JWT_SALT=your_jwt_salt
-JWT_SECRET=your_jwt_secret_key
+PORT=3000
+MONGO_URI=votre_uri_mongodb
+MONGO_USER=votre_utilisateur_mongodb
+MONGO_PASSWORD=votre_mot_de_passe_mongodb
+JWT_SALT=votre_sel_jwt
+JWT_SECRET=votre_cle_secrete_jwt
 JWT_EXPIRATION=24h
-AWS_ACCESS_KEY_ID=your_aws_access_key_id
-AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
-AWS_BUCKET_NAME=your_s3_bucket_name
+AWS_ACCESS_KEY_ID=votre_cle_acces_aws
+AWS_SECRET_ACCESS_KEY=votre_cle_secrete_aws
+AWS_BUCKET_NAME=votre_nom_de_bucket_s3
 ```
 
-**Each variable is required for the application to function properly:**
-- `MONGO_URI`, `MONGO_USER`, `MONGO_PASSWORD`: MongoDB connection
-- `JWT_SALT`, `JWT_SECRET`, `JWT_EXPIRATION`: Security for authentication
-- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_BUCKET_NAME`: File storage on AWS S3
+**Chaque variable est requise pour le bon fonctionnement de l'application.**
 
 ---
 
-## Running the Project
-Start the server with:
+## Lancement du Projet
+Démarrez le serveur avec :
 ```bash
 npm start
 ```
-The API will be available at `http://localhost:3000` by default (or the port specified in your code).
+L'API sera disponible sur le port `3000` par défaut (configurée via la variable `PORT` dans votre fichier `.env`).
 
 ---
 
-## Test Credentials
+## Comptes de Test
 
-The following accounts can be used for testing the application:
+> **⚠️ AVERTISSEMENT DE SÉCURITÉ** : Les mots de passe ci-dessous sont volontairement triviaux car ils sont exclusivement réservés à un **environnement de démonstration** (comme notre déploiement Vercel). Ils ne doivent en aucun cas être utilisés sur un environnement de production réel.
 
-### Administrator
-- **Email**: test@gmail.com
-- **Password**: test
+Les comptes suivants peuvent être utilisés pour tester l'application :
 
-### Standard User
-- **Email**: hugo@gmail.com
-- **Password**: hugo
+### Administrateur
+- **Email** : test@gmail.com
+- **Mot de passe** : test
+
+### Utilisateur Standard
+- **Email** : hugo@gmail.com
+- **Mot de passe** : hugo
 
 ### Commercial
-- **Email**: pablito@gmail.com
-- **Password**: pablito1
+- **Email** : pablito@gmail.com
+- **Mot de passe** : pablito1
 
 ---
 
-## API Documentation
-- Online: [https://ryuksylux.github.io/gsbBackend/](https://ryuksylux.github.io/gsbBackend/)
-- Local: After generating docs, open the `docs/` folder
+## Documentation de l'API
+- En ligne : [https://ryuksylux.github.io/gsbBackend/](https://ryuksylux.github.io/gsbBackend/)
+- Locale : Après avoir généré la documentation, ouvrez le dossier `docs/`
 
-To generate documentation locally:
+Pour générer la documentation localement :
 ```bash
 npm run docs
 ```
-To deploy documentation to GitHub Pages (requires PowerShell and Git):
+Pour déployer la documentation sur GitHub Pages (nécessite PowerShell et Git) :
 ```bash
 npm run docs:deploy
 ```
 
 ---
 
-## Main Endpoints
-- `/api/users` — User management (CRUD)
-- `/api/bills` — Bill management (CRUD, file upload)
-- `/api/login` — Authentication
+## Endpoints Principaux
+- `/api/users` — Gestion des utilisateurs (CRUD)
+- `/api/bills` — Gestion des notes de frais (CRUD, upload de fichiers)
+- `/api/login` — Authentification
 
 ---
 
-## Environment Variables
-**Example `.env` file:**
-```env
-MONGO_URI=your_mongodb_uri
-MONGO_USER=your_mongodb_user
-MONGO_PASSWORD=your_mongodb_password
-JWT_SALT=your_jwt_salt
-JWT_SECRET=your_jwt_secret_key
-JWT_EXPIRATION=24h
-AWS_ACCESS_KEY_ID=your_aws_access_key_id
-AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
-AWS_BUCKET_NAME=your_s3_bucket_name
-```
-
-**Do not commit your `.env` file to version control.**
-
+## Variables d'Environnement
+**Exemple de fichier `.env` :**
+Reportez-vous au fichier `.env.example` présent à la racine du projet.
+**Ne commitez jamais votre fichier `.env` sur le contrôle de version.**
