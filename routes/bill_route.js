@@ -5,7 +5,7 @@
 
 const express = require('express')
 const router = express.Router()
-const { getBills, createBill, deleteBill, getBillsById, updateBill, deleteManyBills } = require('../controller/bill_controller')
+const { getBills, createBill, deleteBill, getBillsById, updateBill, deleteManyBills, getStats } = require('../controller/bill_controller')
 const { verifyToken } = require('../controller/authentification_controller')
 const upload = require('../middleware/upload')
 
@@ -20,6 +20,18 @@ const upload = require('../middleware/upload')
  * @param {callback} getBills - Gestionnaire pour récupérer toutes les factures
  */
 router.get('/', verifyToken, getBills)
+
+/**
+ * Route GET pour obtenir les statistiques des factures
+ * @name GET/bills/stats
+ * @function
+ * @memberof module:routes/bill
+ * @inner
+ * @param {string} path - Chemin de la route '/stats'
+ * @param {callback} verifyToken - Middleware de vérification du token
+ * @param {callback} getStats - Gestionnaire pour récupérer les stats
+ */
+router.get('/stats', verifyToken, getStats)
 
 /**
  * Route GET pour obtenir une facture par son ID

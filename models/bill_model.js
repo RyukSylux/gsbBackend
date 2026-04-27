@@ -37,11 +37,15 @@ const billSchema = new mongoose.Schema({
         type: String,
         required: true
     },    
+    category: {
+        type: String,
+        default: 'Autre'
+    },
     status: {
         type: String,
         required: true,
         default: 'pending',
-        enum: ['pending', 'not-paid', 'paid']
+        enum: ['pending', 'not-paid', 'paid', 'remboursé']
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,

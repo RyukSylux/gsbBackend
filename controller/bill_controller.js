@@ -88,7 +88,7 @@ const getBillsById = async(req,res) => {
  */
 const createBill = async(req, res) => {
     try {
-        const {date, amount, description, status, type} = JSON.parse(req.body.metadata)
+        const {date, amount, description, status, type, category} = JSON.parse(req.body.metadata)
         const {id} = req.user
 
         let proofUrl = null
@@ -105,6 +105,7 @@ const createBill = async(req, res) => {
             description,
             proof : proofUrl,
             status,
+            category: category || 'Autre',
             type,
             user: id
         })
@@ -181,7 +182,7 @@ const updateBill = async(req, res) => {
         }
 
         // On parse les metadata comme dans createBill
-        const {date, amount, description, status, type} = JSON.parse(req.body.metadata);
+        const {date, amount, description, status, type, category} = JSON.parse(req.body.metadata);
         
         // On prépare l'objet de mise à jour
         const updateFields = {
@@ -189,6 +190,7 @@ const updateBill = async(req, res) => {
             amount,
             description,
             status,
+            category,
             type
         };
 
@@ -263,4 +265,33 @@ const deleteManyBills = async(req, res) => {
     }
 }
 
-module.exports = {getBills, createBill, deleteBill, updateBill, getBillsById, deleteManyBills}
+/**
+ * Récupère les statistiques des factures remboursées par catégorie
+ * @function getStats
+ * @async
+ * @param {Object} req - L'objet requête Express
+ * @param {Object} res - L'objet réponse Express
+ * @returns {Promise<Object[]>} Statistiques par catégorie
+ */
+const getStats = async (req, res) => {
+    try {
+        const stats = await Bill.aggregate([
+            {
+                $group: {
+                    _id: {
+                        status: "$status",
+                        category: "$category"
+                    },
+                    totalAmount: { $sum: "$amount" },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { "_id.status": 1, totalAmount: -1 } }
+        ]);
+        res.json(stats);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = {getBills, createBill, deleteBill, updateBill, getBillsById, deleteManyBills, getStats}
