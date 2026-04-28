@@ -17,8 +17,7 @@
   "scripts": {
     "start": "node ./index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "docs": "jsdoc -r ./ -d docs -c jsdoc.json",
-    "docs:deploy": "npm run docs && powershell -Command \"if(!(git rev-parse --verify gh-pages)) { git checkout --orphan gh-pages } else { git checkout gh-pages }; Remove-Item -Path * -Recurse -Force -Exclude '.git'; Copy-Item -Path docs/* -Destination . -Recurse; git add .; git commit -m 'docs: update documentation'; git push origin gh-pages; git checkout main\""
+    "docs": "jsdoc -c jsdoc.json"
   },
   "dependencies": {
     "aws-sdk": "^2.1692.0",
