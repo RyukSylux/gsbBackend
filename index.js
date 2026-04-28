@@ -5,18 +5,25 @@
 
 const express = require('express')
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const app = express()
 const port = 3000
 
+require('dotenv').config()
+
 /**
- * Configuration CORS pour permettre les requêtes cross-origin
+ * Configuration CORS spécifique pour autoriser les cookies (credentials)
+ * Note : origin ne peut pas être '*' quand credentials est à true.
  */
 app.use(cors({
-  origin: '*', // adapte selon ton frontend
-  credentials: true
+  origin: process.env.FRONT_URL || ['http://localhost:5173', 'http://127.0.0.1:5173'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-require('dotenv').config()
+app.use(cookieParser());
+app.use(express.json());
 
 /**
  * Variables d'environnement pour la connexion MongoDB
@@ -34,7 +41,7 @@ const db = mongoose.connection
 db.on('error', (err) => {console.log('Error connecting to MongoDB', err)})
 db.on('open', () => {console.log('connected to MongoDB')})
 
-app.use(express.json())
+
 
 /**
  * Import des routes

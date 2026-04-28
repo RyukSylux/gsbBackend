@@ -6,7 +6,7 @@
 const express = require('express')
 const router = express.Router()
 const { getBills, createBill, deleteBill, getBillsById, updateBill, deleteManyBills, getStats } = require('../controller/bill_controller')
-const { verifyToken } = require('../controller/authentification_controller')
+const { verifyToken, isAdmin } = require('../controller/authentification_controller')
 const upload = require('../middleware/upload')
 
 /**
@@ -29,9 +29,10 @@ router.get('/', verifyToken, getBills)
  * @inner
  * @param {string} path - Chemin de la route '/stats'
  * @param {callback} verifyToken - Middleware de vérification du token
+ * @param {callback} isAdmin - Middleware de vérification du rôle admin
  * @param {callback} getStats - Gestionnaire pour récupérer les stats
  */
-router.get('/stats', verifyToken, getStats)
+router.get('/stats', verifyToken, isAdmin, getStats)
 
 /**
  * Route GET pour obtenir une facture par son ID
