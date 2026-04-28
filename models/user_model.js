@@ -4,13 +4,10 @@
  */
 
 const mongoose = require('mongoose')
-const sha256 = require('js-sha256')
+const bcrypt = require('bcryptjs')
 require('dotenv').config();
 
-/**
- * @constant {string} JWT_SALT - Sel utilisé pour le hachage des mots de passe
- */
-const JWT_SALT = process.env.JWT_SALT || 'salt'
+// JWT_SALT n'est plus nécessaire ici car bcrypt gère son propre sel
 
 /**
  * Schéma Mongoose pour les utilisateurs
@@ -54,8 +51,9 @@ userSchema.pre('save', async function (next) {
             throw new Error('User already exists');
         }
 
-        const secret = JWT_SALT;
-        this.password = sha256(this.password + secret);
+        // Hachage avec Bcrypt (10 rounds par défaut si on ne précise pas, mais on le met explicitement)
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
         next();
     } catch (error) {
         next(error); 
