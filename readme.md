@@ -87,12 +87,27 @@ Pour garantir une compatibilité maximale (notamment avec Safari/macOS) tout en 
 ---
 
 ## 📂 Structure du Projet
-- `controller/` : Logique métier et traitement des requêtes.
-- `models/` : Définition des schémas de données Mongoose.
-- `routes/` : Définition des endpoints et routage.
-- `middleware/` : Couches de sécurité et traitements intermédiaires.
-- `utils/` : Utilitaires système (Configuration S3, etc.).
-- `docs/` : Documentation technique générée.
+
+```text
+├── controller/
+│   ├── authentification_controller.js  # Logique de session (Login/Logout/Me)
+│   ├── bill_controller.js             # CRUD des factures & Agrégation Stats
+│   └── user_controller.js             # Gestion CRUD des utilisateurs
+├── models/
+│   ├── bill_model.js                  # Schéma Mongoose des factures
+│   └── user_model.js                  # Schéma Mongoose des utilisateurs
+├── routes/
+│   ├── authentication_route.js        # Points d'entrée Auth
+│   ├── bill_route.js                  # Points d'entrée Factures
+│   └── user_route.js                  # Points d'entrée Utilisateurs
+├── middleware/
+│   └── upload.js                      # Configuration Multer pour AWS S3
+├── utils/
+│   └── s3.js                          # Helpers de configuration AWS S3
+├── docs/                              # JSDoc générée (GitHub Pages)
+├── .env                               # Variables d'environnement
+└── index.js                           # Point d'entrée de l'application (Express/CORS)
+```
 
 ---
 
