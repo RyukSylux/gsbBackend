@@ -37,7 +37,7 @@ Le code source de l'interface frontend de ce projet est disponible ici : [RyukSy
 - **MongoDB** : Base de données NoSQL pour stocker utilisateurs et notes de frais
 - **Mongoose** : ODM pour MongoDB, gérant les schémas et la validation
 - **JWT (jsonwebtoken)** : Sécurisation de l'authentification et des autorisations
-- **js-sha256** : Bibliothèque de hachage sécurisé des mots de passe
+- **Bcryptjs** : Bibliothèque de hachage sécurisé des mots de passe (avec salage automatique)
 - **Multer** : Middleware pour la gestion des téléchargements de fichiers
 - **AWS SDK** : Utilisé pour le transfert et la suppression de fichiers sur Amazon S3
 - **dotenv** : Chargement des variables d'environnement depuis un fichier `.env`
