@@ -1,22 +1,23 @@
 /**
- * @fileoverview Utilitaires pour l'interaction avec Amazon S3
+ * @fileoverview Utilitaires pour l'interaction avec Amazon S3 (AWS SDK v3)
  * @module utils/s3
  */
 
-const AWS = require('aws-sdk');
+const { S3Client, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const { Upload } = require('@aws-sdk/lib-storage');
 const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
 
 /**
- * Configuration AWS depuis les variables d'environnement
+ * Configuration du client S3 v3
  */
-AWS.config.update({
-    region: 'eu-west-3',
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+const s3Client = new S3Client({
+    region: process.env.AWS_REGION || 'eu-north-1',
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    }
 });
-
-const s3 = new AWS.S3();
 
 /**
  * @constant {string} BUCKET_NAME - Nom du bucket S3
@@ -34,18 +35,23 @@ const BUCKET_NAME = process.env.AWS_BUCKET_NAME;
  * @throws {Error} Erreur lors du téléchargement
  */
 const uploadToS3 = async (file) => {
-    try{
+    try {
         const fileExtension = file.originalname.split('.').pop();
         const key = `${uuidv4()}.${fileExtension}`;
 
-        const params = {
-            Bucket: BUCKET_NAME,
-            Key: key,
-            Body: file.buffer
-        };
-       const uploadData = await s3.upload(params).promise();
-       console.log("File uploaded successfully at", uploadData.Location);
-       return uploadData.Location; // Return the URL of the uploaded file
+        const upload = new Upload({
+            client: s3Client,
+            params: {
+                Bucket: BUCKET_NAME,
+                Key: key,
+                Body: file.buffer,
+                ContentType: file.mimetype // Ajout optionnel mais recommandé
+            }
+        });
+
+        const result = await upload.done();
+        console.log("File uploaded successfully at", result.Location);
+        return result.Location; 
     } catch (error) {
         console.error("Error uploading file to S3:", error);
         throw new Error("Failed to upload file to S3");
@@ -65,12 +71,12 @@ const deleteFromS3 = async (fileUrl) => {
         // Extraire le nom du fichier de l'URL
         const key = fileUrl.split('/').pop();
         
-        const params = {
+        const command = new DeleteObjectCommand({
             Bucket: BUCKET_NAME,
             Key: key
-        };
+        });
 
-        await s3.deleteObject(params).promise();
+        await s3Client.send(command);
         console.log("File deleted successfully from S3:", key);
         return true;
     } catch (error) {

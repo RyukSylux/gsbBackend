@@ -20,17 +20,19 @@
     "docs": "jsdoc -c jsdoc.json"
   },
   "dependencies": {
-    "aws-sdk": "^2.1692.0",
+    "@aws-sdk/client-s3": "^3.1038.0",
+    "@aws-sdk/lib-storage": "^3.1038.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.13.2",
-    "multer": "^1.4.5-lts.2"
+    "multer": "^1.4.5-lts.2",
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
-    "clean-jsdoc-theme": "^4.3.0",
+    "clean-jsdoc-theme": "^4.1.9",
     "jsdoc": "^4.0.4"
   }
 }
