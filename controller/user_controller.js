@@ -6,10 +6,10 @@
 const User = require('../models/user_model')
 const Bill = require('../models/bill_model')
 const { deleteFromS3 } = require('../utils/s3')
-const sha256 = require('js-sha256')
+const bcrypt = require('bcryptjs')
 require('dotenv').config();
 
-const JWT_SALT = process.env.JWT_SALT || 'salt'
+// JWT_SALT n'est plus nécessaire ici
 
 /**
  * Récupère tous les utilisateurs ou filtre par email
@@ -83,7 +83,7 @@ const updateUser = async(req, res) => {
     try {
         const email = req.params.email;
         const {currentPassword, newPassword, role, newEmail, name, description} = req.body;
-        const isAdmin = req.user.role === 'admin'; // On récupère le rôle de l'utilisateur qui fait la requête
+        const isAdmin = req.user.role === 'admin'; 
         
         // Vérifier si l'utilisateur existe
         const user = await User.findOne({ email: email });
@@ -93,9 +93,8 @@ const updateUser = async(req, res) => {
 
         // Si l'utilisateur n'est pas admin et qu'il veut changer le mot de passe, vérifier l'ancien
         if (newPassword && !isAdmin) {
-            // Hash du mot de passe actuel pour comparaison
-            const hashedCurrentPassword = sha256(currentPassword + JWT_SALT);
-            if (hashedCurrentPassword !== user.password) {
+            const isMatch = await bcrypt.compare(currentPassword, user.password);
+            if (!isMatch) {
                 return res.status(401).json({ message: 'Mot de passe actuel incorrect' });
             }
         }
@@ -108,9 +107,10 @@ const updateUser = async(req, res) => {
             ...(description && { description })
         };
 
-        // Si un nouveau mot de passe est fourni, le hasher
+        // Si un nouveau mot de passe est fourni, le hasher avec Bcrypt
         if (newPassword) {
-            updateData.password = sha256(newPassword + JWT_SALT);
+            const salt = await bcrypt.genSalt(10);
+            updateData.password = await bcrypt.hash(newPassword, salt);
         }
 
         // Mettre à jour l'utilisateur

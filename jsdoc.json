@@ -25,7 +25,7 @@
             "theme": "dark",
             "menu": {
                 "Github": {
-                    "href": "https://github.com/votre-username/gsbBackend",
+                    "href": "https://github.com/RyukSylux/gsbBackend",
                     "target": "_blank",
                     "class": "menu-item",
                     "id": "github_link"

@@ -5,7 +5,7 @@
 
 const jwt = require('jsonwebtoken');
 const User = require('../models/user_model');
-const sha256 = require('js-sha256');
+const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 /**
@@ -14,11 +14,7 @@ require('dotenv').config();
  */
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
-/**
- * @constant {string} JWT_SALT - Sel utilisé pour le hachage des mots de passe
- * @default 'your_jwt_salt'
- */
-const JWT_SALT = process.env.JWT_SALT || 'your_jwt_salt';
+// JWT_SALT n'est plus nécessaire pour les mots de passe avec Bcrypt
 
 /**
  * @constant {string} JWT_EXPIRATION - Durée de validité par défaut des tokens JWT
@@ -86,7 +82,8 @@ const authenticateUser = async (req, res) => {
     if(!user){
       return res.status(401).json({ message: 'Invalid credentials' });
     }
-    if(user.password !== sha256(password + JWT_SALT)){ // Remplacez 'secret' par le secret réel
+    const isMatch = await bcrypt.compare(password, user.password);
+    if(!isMatch){
       return res.status(401).json({ message: 'Invalid credentials' });
     }
   
