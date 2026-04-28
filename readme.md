@@ -1,151 +1,171 @@
-# API Backend GSB
+# 🛡️ API Backend GSB (Galaxy Swiss Bourdin)
 
-## Présentation du Projet
-Ce projet constitue l'API backend de l'application GSB (Galaxy Swiss Bourdin), développée dans le cadre de l'épreuve E6 du BTS SIO, option SLAM. Il fournit les points d'accès (endpoints) pour la gestion des utilisateurs, la gestion des notes de frais, et l'authentification, en utilisant des technologies web modernes et les bonnes pratiques.
-
-## Dépôt Frontend
-Le code source de l'interface frontend de ce projet est disponible ici : [RyukSylux/gsbFront](https://github.com/RyukSylux/gsbFront).
+## 📝 Présentation du Projet
+Ce projet constitue l'API backend de l'application **GSB**, développée dans le cadre de l'épreuve **E6 du BTS SIO (option SLAM)**. Il fournit une architecture robuste pour la gestion des utilisateurs, des notes de frais, et l'authentification sécurisée.
 
 ---
 
-## Table des Matières
-- [Fonctionnalités](#fonctionnalités)
+## 📋 Table des Matières
+- [Architecture Globale](#architecture-globale)
+- [Sécurité & Authentification](#sécurité--authentification)
 - [Technologies Utilisées](#technologies-utilisées)
 - [Structure du Projet](#structure-du-projet)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Lancement du Projet](#lancement-du-projet)
-- [Documentation de l'API](#documentation-de-lapi)
-- [Endpoints Principaux](#endpoints-principaux)
-- [Variables d'Environnement](#variables-denvironnement)
+- [Installation & Configuration](#installation--configuration)
+- [Comptes de Test](#comptes-de-test)
+- [Documentation JSDoc](#documentation-jsdoc)
+- [Endpoints de l'API](#endpoints-de-lapi)
+- [Auteur](#auteur)
 
 ---
 
-## Fonctionnalités
-- Inscription, authentification et gestion des utilisateurs
-- Création, consultation, modification et suppression des notes de frais
-- Téléchargement de justificatifs (stockés sur AWS S3)
-- Authentification sécurisée avec JWT
-- Structure d'API RESTful
-- Génération de la documentation de l'API avec JSDoc
+## 🏗️ Architecture Globale
 
----
-
-## Technologies Utilisées
-- **Node.js** : Environnement d'exécution JavaScript côté serveur
-- **Express** : Framework web pour la création d'API REST
-- **MongoDB** : Base de données NoSQL pour stocker utilisateurs et notes de frais
-- **Mongoose** : ODM pour MongoDB, gérant les schémas et la validation
-- **JWT (jsonwebtoken)** : Sécurisation de l'authentification et des autorisations
-- **Bcryptjs** : Bibliothèque de hachage sécurisé des mots de passe (avec salage automatique)
-- **Multer** : Middleware pour la gestion des téléchargements de fichiers
-- **AWS SDK** : Utilisé pour le transfert et la suppression de fichiers sur Amazon S3
-- **dotenv** : Chargement des variables d'environnement depuis un fichier `.env`
-- **JSDoc** : Génération de documentation à partir des commentaires du code
-- **CORS** : Autorisation sécurisée des requêtes cross-origin
-
----
-
-## Structure du Projet
 ```text
-├── controller/    # Contrôleurs de l'application (logique métier)
-├── models/        # Modèles de données (schémas Mongoose)
-├── routes/        # Routes de l'API
-├── middleware/    # Middlewares Express
-├── utils/         # Fonctions utilitaires (ex: upload S3)
-├── docs/          # Documentation de l'API générée
-├── index.js       # Point d'entrée principal
-├── package.json   # Dépendances et scripts du projet
-├── .env           # Variables d'environnement (non versionné)
+       +-------------------+
+       |   Client React    |
+       |  (Vite + Axios)   |
+       +---------+---------+
+                 |
+                 | HTTP/JSON (CORS)
+                 v
+       +---------+---------+          +-----------------+
+       |   API Express.js  +---------->   MongoDB Atlas |
+       | (Node.js Backend) |          |  (Données/User) |
+       +---------+---------+          +-----------------+
+                 |
+                 | AWS SDK v3
+                 v
+       +---------+---------+
+       |   Amazon S3       |
+       | (Justificatifs)   |
+       +-------------------+
 ```
 
 ---
 
-## Installation
-1. Cloner le dépôt :
-   ```bash
-   git clone https://github.com/RyukSylux/gsbBackend.git
-   cd gsbBackend
-   ```
-2. Installer les dépendances :
-   ```bash
-   npm install
-   ```
+## 🔒 Sécurité & Authentification
+
+### Stratégie d'Authentification Hybride
+Pour garantir une compatibilité maximale (notamment avec Safari/macOS) tout en maintenant un haut niveau de sécurité, nous utilisons une double vérification :
+
+```text
+[ Login ] --> [ Backend ]
+                 |
+                 +--> 1. Génère un JWT
+                 +--> 2. Pose un Cookie httpOnly (Sécurité XSS)
+                 +--> 3. Renvoie le JWT en JSON (Fallback Mac/Safari)
+
+[ Request ] --> [ Middleware verifyToken ]
+                 |
+                 +--> Vérifie Cookie ? OK -> Autorisé
+                 +--> Sinon, vérifie Header Auth ? OK -> Autorisé
+                 +--> Sinon -> 401 Unauthorized
+```
+
+### Autres mesures :
+- **Hachage Bcryptjs** : Les mots de passe sont salés et hachés avant stockage.
+- **Middleware `isAdmin`** : Protection granulaire des routes de statistiques et de gestion.
+- **Validation** : Nettoyage des données via les schémas Mongoose (ODM).
 
 ---
 
-## Configuration
-Avant de lancer le projet, créez un fichier `.env` à la racine du projet en vous basant sur le fichier `.env.example` :
+## 🛠️ Technologies Utilisées
+- **Node.js & Express** : Environnement d'exécution et framework web.
+- **MongoDB Atlas & Mongoose** : Base de données NoSQL et gestion des schémas.
+- **JWT (jsonwebtoken)** : Sécurisation des échanges via jetons.
+- **Bcryptjs** : Hachage sécurisé des mots de passe.
+- **Cookie-parser** : Lecture des cookies sécurisés `httpOnly`.
+- **CORS** : Gestion des accès cross-origin.
+- **AWS SDK v3** : Interaction avec le stockage Amazon S3.
+- **Multer** : Gestion des téléchargements de fichiers (images/PDF).
+- **UUID** : Génération d'identifiants uniques.
+- **Dotenv** : Gestion des variables d'environnement.
+- **JSDoc** : Documentation technique automatisée.
 
+---
+
+## 📂 Structure du Projet
+- `controller/` : Logique métier et traitement des requêtes.
+- `models/` : Définition des schémas de données Mongoose.
+- `routes/` : Définition des endpoints et routage.
+- `middleware/` : Couches de sécurité et traitements intermédiaires.
+- `utils/` : Utilitaires système (Configuration S3, etc.).
+- `docs/` : Documentation technique générée.
+
+---
+
+## ⚙️ Installation & Configuration
+1. **Installation** : `npm install`
+2. **Configuration** : Créer un fichier `.env` (voir `.env.example`) :
 ```env
 PORT=3000
 MONGO_URI=votre_uri_mongodb
-MONGO_USER=votre_utilisateur_mongodb
-MONGO_PASSWORD=votre_mot_de_passe_mongodb
-JWT_SALT=votre_sel_jwt
-JWT_SECRET=votre_cle_secrete_jwt
-JWT_EXPIRATION=24h
-AWS_ACCESS_KEY_ID=votre_cle_acces_aws
-AWS_SECRET_ACCESS_KEY=votre_cle_secrete_aws
-AWS_BUCKET_NAME=votre_nom_de_bucket_s3
+JWT_SECRET=votre_cle_secrete
+JWT_EXPIRATION=2h
+FRONT_URL=http://localhost:5173
+AWS_ACCESS_KEY_ID=votre_cle_aws
+AWS_SECRET_ACCESS_KEY=votre_secret_aws
+AWS_BUCKET_NAME=votre_bucket
+AWS_REGION=eu-north-1
 ```
-
-**Chaque variable est requise pour le bon fonctionnement de l'application.**
+3. **Lancement** : `npm start`
 
 ---
 
-## Lancement du Projet
-Démarrez le serveur avec :
-```bash
-npm start
-```
-L'API sera disponible sur le port `3000` par défaut (configurée via la variable `PORT` dans votre fichier `.env`).
-
----
-
-## Comptes de Test
-
-> **⚠️ AVERTISSEMENT DE SÉCURITÉ** : Les mots de passe ci-dessous sont volontairement triviaux car ils sont exclusivement réservés à un **environnement de démonstration** (comme notre déploiement Vercel). Ils ne doivent en aucun cas être utilisés sur un environnement de production réel.
-
-Les comptes suivants peuvent être utilisés pour tester l'application :
+## 👥 Comptes de Test
 
 ### Administrateur
-- **Email** : test@gmail.com
-- **Mot de passe** : test
+- **Email** : `test@gmail.com`
+- **Mot de passe** : `test`
 
 ### Utilisateur Standard
-- **Email** : hugo@gmail.com
-- **Mot de passe** : hugo
+- **Email** : `hugo@gmail.com`
+- **Mot de passe** : `hugo`
 
 ### Commercial
-- **Email** : pablito@gmail.com
-- **Mot de passe** : pablito1
+- **Email** : `pablito@gmail.com`
+- **Mot de passe** : `pablito1`
 
 ---
 
-## Documentation de l'API
-- En ligne : [https://ryuksylux.github.io/gsbBackend/](https://ryuksylux.github.io/gsbBackend/)
-- Locale : Après avoir généré la documentation, ouvrez le dossier `docs/`
+## 📖 Documentation JSDoc
+La documentation technique complète de l'API est générée automatiquement à partir des commentaires du code.
 
-Pour générer la documentation localement :
-```bash
-npm run docs
-```
-Pour déployer la documentation sur GitHub Pages (nécessite PowerShell et Git) :
-```bash
-npm run docs:deploy
-```
+- **En ligne (GitHub Pages)** : [https://ryuksylux.github.io/gsbBackend/](https://ryuksylux.github.io/gsbBackend/)
+- **Génération locale** : `npm run docs`
+
+### ⚙️ Automatisation (CI/CD)
+Un pipeline **GitHub Actions** régénère et déploie la documentation sur GitHub Pages à chaque `push` sur la branche `main`.
 
 ---
 
-## Endpoints Principaux
-- `/api/users` — Gestion des utilisateurs (CRUD)
-- `/api/bills` — Gestion des notes de frais (CRUD, upload de fichiers)
-- `/api/login` — Authentification
+## 📊 Endpoints de l'API
+
+### 🔑 Authentification
+| Méthode | Route | Description | Protection |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/login` | Connexion utilisateur | Publique |
+| `POST` | `/api/login/logout` | Déconnexion | Publique |
+| `GET` | `/api/login/me` | Profil actuel | Connecté |
+
+### 📄 Gestion des Factures
+| Méthode | Route | Description | Protection |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/bills` | Liste des factures | Connecté |
+| `POST` | `/api/bills` | Créer une facture | Connecté |
+| `PUT` | `/api/bills/:id` | Modifier une facture | Connecté |
+| `DELETE` | `/api/bills/:id` | Supprimer une facture | Connecté |
+| `GET` | `/api/bills/stats` | Statistiques globales | **Admin** |
+
+### 👥 Gestion des Utilisateurs
+| Méthode | Route | Description | Protection |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/users` | Liste des utilisateurs | Connecté |
+| `POST` | `/api/users` | Inscription | Publique |
+| `DELETE` | `/api/users/:email` | Supprimer un utilisateur | Connecté |
 
 ---
 
-## Variables d'Environnement
-**Exemple de fichier `.env` :**
-Reportez-vous au fichier `.env.example` présent à la racine du projet.
-**Ne commitez jamais votre fichier `.env` sur le contrôle de version.**
+## 👨‍💻 Auteur
+**Morgan Bourré** - BTS SIO SLAM 2025
+- **Entreprise** : Galaxy Swiss Bourdin (GSB)

@@ -88,7 +88,7 @@ const getBillsById = async(req,res) => {
  */
 const createBill = async(req, res) => {
     try {
-        const {date, amount, description, status, type, category} = JSON.parse(req.body.metadata)
+        const {date, amount, description, status, type} = JSON.parse(req.body.metadata)
         const {id} = req.user
 
         let proofUrl = null
@@ -105,7 +105,6 @@ const createBill = async(req, res) => {
             description,
             proof : proofUrl,
             status,
-            category: category || 'Autre',
             type,
             user: id
         })
@@ -182,7 +181,7 @@ const updateBill = async(req, res) => {
         }
 
         // On parse les metadata comme dans createBill
-        const {date, amount, description, status, type, category} = JSON.parse(req.body.metadata);
+        const {date, amount, description, status, type} = JSON.parse(req.body.metadata);
         
         // On prépare l'objet de mise à jour
         const updateFields = {
@@ -190,7 +189,6 @@ const updateBill = async(req, res) => {
             amount,
             description,
             status,
-            category,
             type
         };
 
@@ -266,12 +264,12 @@ const deleteManyBills = async(req, res) => {
 }
 
 /**
- * Récupère les statistiques des factures remboursées par catégorie
+ * Récupère les statistiques des factures par statut
  * @function getStats
  * @async
  * @param {Object} req - L'objet requête Express
  * @param {Object} res - L'objet réponse Express
- * @returns {Promise<Object[]>} Statistiques par catégorie
+ * @returns {Promise<Object[]>} Statistiques par statut
  */
 const getStats = async (req, res) => {
     try {
@@ -279,8 +277,7 @@ const getStats = async (req, res) => {
             {
                 $group: {
                     _id: {
-                        status: "$status",
-                        category: "$category"
+                        status: "$status"
                     },
                     totalAmount: { $sum: "$amount" },
                     count: { $sum: 1 }

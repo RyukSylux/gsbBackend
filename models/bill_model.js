@@ -37,10 +37,6 @@ const billSchema = new mongoose.Schema({
         type: String,
         required: true
     },    
-    category: {
-        type: String,
-        default: 'Autre'
-    },
     status: {
         type: String,
         required: true,
