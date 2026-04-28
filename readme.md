@@ -3,6 +3,8 @@
 ## 📝 Présentation du Projet
 Ce projet constitue l'API backend de l'application **GSB**, développée dans le cadre de l'épreuve **E6 du BTS SIO (option SLAM)**. Il fournit une architecture robuste pour la gestion des utilisateurs, des notes de frais, et l'authentification sécurisée.
 
+🔗 **Dépôt Frontend** : Cette API fonctionne en binôme avec l'interface utilisateur pour offrir une expérience complète. Vous pouvez retrouver le code du front ici : [https://github.com/RyukSylux/gsbFront](https://github.com/RyukSylux/gsbFront)
+
 ---
 
 ## 📋 Table des Matières
