@@ -155,7 +155,7 @@ Un pipeline **GitHub Actions** régénère et déploie la documentation sur GitH
 | `POST` | `/api/bills` | Créer une facture | Connecté |
 | `PUT` | `/api/bills/:id` | Modifier une facture | Connecté |
 | `DELETE` | `/api/bills/:id` | Supprimer une facture | Connecté |
-| `GET` | `/api/bills/stats` | Statistiques globales | **Admin** |
+| `GET` | `/api/bills/stats` | Statistiques globales par catégorie | **Admin** |
 
 ### 👥 Gestion des Utilisateurs
 | Méthode | Route | Description | Protection |

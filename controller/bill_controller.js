@@ -79,6 +79,7 @@ const getBillsById = async(req,res) => {
  * @param {string} req.body.metadata.description - La description de la facture
  * @param {string} req.body.metadata.status - Le statut de la facture
  * @param {string} req.body.metadata.type - Le type de la facture
+ * @param {string} req.body.metadata.category - La catégorie de la facture
  * @param {Object} req.file - Le fichier justificatif
  * @param {Object} req.user - L'utilisateur authentifié
  * @param {string} req.user.id - L'ID de l'utilisateur
@@ -88,7 +89,7 @@ const getBillsById = async(req,res) => {
  */
 const createBill = async(req, res) => {
     try {
-        const {date, amount, description, status, type} = JSON.parse(req.body.metadata)
+        const {date, amount, description, status, type, category} = JSON.parse(req.body.metadata)
         const {id} = req.user
 
         let proofUrl = null
@@ -105,6 +106,7 @@ const createBill = async(req, res) => {
             description,
             proof : proofUrl,
             status,
+            category: category || 'Autre',
             type,
             user: id
         })
@@ -181,7 +183,7 @@ const updateBill = async(req, res) => {
         }
 
         // On parse les metadata comme dans createBill
-        const {date, amount, description, status, type} = JSON.parse(req.body.metadata);
+        const {date, amount, description, status, type, category} = JSON.parse(req.body.metadata);
         
         // On prépare l'objet de mise à jour
         const updateFields = {
@@ -189,6 +191,7 @@ const updateBill = async(req, res) => {
             amount,
             description,
             status,
+            category,
             type
         };
 
@@ -277,7 +280,8 @@ const getStats = async (req, res) => {
             {
                 $group: {
                     _id: {
-                        status: "$status"
+                        status: "$status",
+                        category: "$category"
                     },
                     totalAmount: { $sum: "$amount" },
                     count: { $sum: 1 }
