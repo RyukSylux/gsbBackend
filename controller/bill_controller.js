@@ -196,8 +196,8 @@ const updateBill = async(req, res) => {
             return res.status(404).json({message: 'Bill not found'});
         }
 
-        // Sécurité : Seul le propriétaire ou un admin peut modifier
-        if (req.user.role !== 'admin' && existingBill.user.toString() !== req.user.id) {
+        // Sécurité : Seul un admin peut modifier
+        if (req.user.role !== 'admin') {
             return res.status(403).json({message: 'Forbidden'});
         }
 
