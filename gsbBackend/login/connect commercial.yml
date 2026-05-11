@@ -1,0 +1,22 @@
+info:
+  name: connect commercial
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: http://{{base_url}}/login
+  body:
+    type: json
+    data: |-
+      {
+        "email":"pablito@gmail.com",
+        "password":"pablito1"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

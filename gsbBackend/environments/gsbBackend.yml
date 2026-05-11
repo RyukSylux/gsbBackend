@@ -1,0 +1,4 @@
+name: gsbBackend
+variables:
+  - name: base_url
+    value: localhost:3000/api

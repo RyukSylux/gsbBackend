@@ -1,0 +1,21 @@
+info:
+  name: delete many
+  type: http
+  seq: 6
+
+http:
+  method: DELETE
+  url: http://{{base_url}}/bills/many
+  body:
+    type: json
+    data: |-
+      {
+        "ids": ["id1", "id2"]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
