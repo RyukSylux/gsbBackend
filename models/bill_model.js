@@ -8,12 +8,14 @@ const mongoose = require('mongoose')
 /**
  * Schéma Mongoose pour les factures
  * @typedef {Object} BillSchema
- * @property {Date} date - Date de la facture
+ * @property {string} date - Date de la facture (Format ISO ou String)
  * @property {number} amount - Montant de la facture
  * @property {string} description - Description de la facture
  * @property {string} proof - URL du justificatif dans S3
- * @property {string} status - Statut de la facture ('pending', 'paid', 'not paid')
- * @property {mongoose.Schema.Types.ObjectId} user - Référence vers l'utilisateur
+ * @property {string} category - Catégorie de la facture ('Transport', 'Hébergement', 'Repas', 'Autre')
+ * @property {string} status - Statut ('pending', 'not-paid', 'paid', 'refunded')
+ * @property {mongoose.Types.ObjectId} user - Référence vers l'utilisateur propriétaire
+ * @property {Date} createdAt - Date de création en base
  */
 const billSchema = new mongoose.Schema({
     date: {
@@ -45,7 +47,7 @@ const billSchema = new mongoose.Schema({
         type: String,
         required: true,
         default: 'pending',
-        enum: ['pending', 'not-paid', 'paid', 'remboursé']
+        enum: ['pending', 'not-paid', 'paid', 'refunded']
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,

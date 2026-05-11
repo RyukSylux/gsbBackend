@@ -21,16 +21,16 @@ const isAdmin = (req, res, next) => {
         const token = req.cookies.token || req.headers['authorization']?.split(' ')[1];
         
         if (!token) {
-            return res.status(401).json({ message: 'Authentification requise' });
+            return res.status(401).json({ message: 'Authentication required' });
         }
 
         jwt.verify(token, JWT_SECRET, (err, decoded) => {
             if (err) {
-                return res.status(403).json({ message: 'Session expirée ou invalide' });
+                return res.status(403).json({ message: 'Invalid session' });
             }
             req.user = decoded;
             if (req.user.role !== 'admin') {
-                return res.status(403).json({ message: 'Droits administrateur requis' });
+                return res.status(403).json({ message: 'Forbidden' });
             }
             next();
         });
@@ -42,17 +42,26 @@ const isAdmin = (req, res, next) => {
   
 /**
  * Authentifie un utilisateur (Cookie + JSON Token pour compatibilité Mac/Safari)
+ * @async
+ * @function authenticateUser
+ * @param {Object} req - Requête Express
+ * @param {Object} req.body - Données de connexion
+ * @param {string} req.body.email - Email de l'utilisateur
+ * @param {string} req.body.password - Mot de passe
+ * @param {boolean} [req.body.rememberMe] - Option 'Se souvenir de moi'
+ * @param {Object} res - Réponse Express
+ * @returns {Promise<void>}
  */
 const authenticateUser = async (req, res) => {
     const { email, password, rememberMe } = req.body;
     const user = await User.findOne({ email });
 
     if (!user) {
-        return res.status(401).json({ message: 'Identifiants invalides' });
+        return res.status(401).json({ message: 'Invalid credentials' });
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-        return res.status(401).json({ message: 'Identifiants invalides' });
+        return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     const expiresIn = rememberMe ? JWT_EXPIRATION_REMEMBERED : JWT_EXPIRATION;
@@ -78,7 +87,7 @@ const authenticateUser = async (req, res) => {
 
     // 2. Envoi dans le JSON (Fallback pour Mac/Safari)
     res.json({
-        message: 'Connexion réussie',
+        message: 'Login successful',
         token: token, // <-- Fallback
         user: {
             id: user._id,
@@ -97,12 +106,12 @@ const verifyToken = (req, res, next) => {
     const token = req.cookies.token || req.headers['authorization']?.split(' ')[1];
     
     if (!token) {
-        return res.status(401).json({ message: 'Session expirée' });
+        return res.status(401).json({ message: 'Session expired' });
     }
 
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) {
-            return res.status(403).json({ message: 'Session invalide' });
+            return res.status(403).json({ message: 'Invalid session' });
         }
         req.user = decoded;
         next();
@@ -116,7 +125,7 @@ const logout = (req, res) => {
         sameSite: 'None',
         path: '/'
     });
-    res.json({ message: 'Déconnexion réussie' });
+    res.json({ message: 'Logout successful' });
 }
 
 module.exports = { isAdmin, authenticateUser, verifyToken, logout }

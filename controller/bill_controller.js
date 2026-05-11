@@ -57,32 +57,41 @@ const getBills = async(req,res) => {
  */
 const getBillsById = async(req,res) => {
     try{
-        const bill = await Bill.findOne({_id : req.params._id})
+        const bill = await Bill.findById(req.params._id)
         if(!bill){
-         res.status(404).json({message: 'Bill not found'})
-        }else{
-        res.json(bill)}}
+            return res.status(404).json({message: 'Bill not found'})
+        }
+
+        // Sécurité : Seul le propriétaire ou un admin peut voir les détails
+        if (req.user.role !== 'admin' && bill.user.toString() !== req.user.id) {
+            return res.status(403).json({message: 'Forbidden'});
+        }
+
+        res.json(bill)
+    }
         catch (error) {
              res.status(500).json({message: error.message})
          }
 }
 
 /**
+ * @typedef {Object} BillMetadata
+ * @property {string} date - La date de la facture
+ * @property {number} amount - Le montant de la facture
+ * @property {string} description - La description de la facture
+ * @property {string} status - Le statut de la facture ('pending', 'not-paid', 'paid', 'refunded')
+ * @property {string} type - Le type de la facture (ex: 'Frais de déplacement', 'Repas', etc.)
+ * @property {string} category - La catégorie de la facture ('Transport', 'Hébergement', 'Repas', 'Autre')
+ */
+
+/**
  * Crée une nouvelle facture
  * @function createBill
  * @async
  * @param {Object} req - L'objet requête Express
- * @param {Object} req.body - Le corps de la requête
- * @param {Object} req.body.metadata - Les métadonnées de la facture
- * @param {string} req.body.metadata.date - La date de la facture
- * @param {number} req.body.metadata.amount - Le montant de la facture
- * @param {string} req.body.metadata.description - La description de la facture
- * @param {string} req.body.metadata.status - Le statut de la facture
- * @param {string} req.body.metadata.type - Le type de la facture
- * @param {string} req.body.metadata.category - La catégorie de la facture
- * @param {Object} req.file - Le fichier justificatif
- * @param {Object} req.user - L'utilisateur authentifié
- * @param {string} req.user.id - L'ID de l'utilisateur
+ * @param {BillMetadata} req.body.metadata - Les métadonnées (Format JSON String)
+ * @param {Object} req.file - Le fichier justificatif (Champ 'proof')
+ * @param {string} req.user.id - L'ID de l'utilisateur authentifié
  * @param {Object} res - L'objet réponse Express
  * @returns {Promise<Object>} La facture créée
  * @throws {Error} Erreur lors de la création de la facture
@@ -132,14 +141,21 @@ const createBill = async(req, res) => {
 const deleteBill = async(req, res) => {
     try {
         if (!req.params._bill || !req.params._bill.match(/^[0-9a-fA-F]{24}$/)) {
-            return res.status(400).json({message: 'ID de facture invalide'});
+            return res.status(400).json({message: 'Invalid bill ID'});
         }
 
-        const bill = await Bill.findByIdAndDelete(req.params._bill);  // On utilise _bill
+        const bill = await Bill.findById(req.params._bill);
         
         if(!bill) {
             return res.status(404).json({message: 'Bill not found'});
         }
+
+        // Sécurité : Seul le propriétaire ou un admin peut supprimer
+        if (req.user.role !== 'admin' && bill.user.toString() !== req.user.id) {
+            return res.status(403).json({message: 'Forbidden'});
+        }
+
+        await bill.deleteOne();
 
         // On supprime le fichier de preuve de S3
         if (bill.proof) {
@@ -161,15 +177,13 @@ const deleteBill = async(req, res) => {
 }
 
 /**
- * Met à jour une facture
+ * Met à jour une facture existante
  * @function updateBill
  * @async
  * @param {Object} req - L'objet requête Express
- * @param {Object} req.params - Les paramètres de la requête
- * @param {string} req.params._id - L'ID de la facture à mettre à jour
- * @param {Object} req.body - Le corps de la requête
- * @param {Object} req.body.metadata - Les métadonnées de la facture
- * @param {Object} req.file - Le nouveau fichier justificatif (optionnel)
+ * @param {string} req.params._id - L'ID de la facture à modifier
+ * @param {BillMetadata} req.body.metadata - Les métadonnées (Format JSON String)
+ * @param {Object} req.file - Le nouveau fichier justificatif (Optionnel)
  * @param {Object} res - L'objet réponse Express
  * @returns {Promise<Object>} La facture mise à jour
  * @throws {Error} Erreur lors de la mise à jour
@@ -179,7 +193,12 @@ const updateBill = async(req, res) => {
 
         const existingBill = await Bill.findById(req.params._id);
         if (!existingBill) {
-            return res.status(404).json({message: 'Facture non trouvée'});
+            return res.status(404).json({message: 'Bill not found'});
+        }
+
+        // Sécurité : Seul le propriétaire ou un admin peut modifier
+        if (req.user.role !== 'admin' && existingBill.user.toString() !== req.user.id) {
+            return res.status(403).json({message: 'Forbidden'});
         }
 
         // On parse les metadata comme dans createBill
@@ -231,11 +250,17 @@ const deleteManyBills = async(req, res) => {
         const { ids } = req.body;
 
         if (!Array.isArray(ids)) {
-            return res.status(400).json({ message: 'Les IDs doivent être fournis dans un tableau' });
+            return res.status(400).json({ message: 'IDs must be provided as an array' });
         }
 
-        // Récupérer d'abord toutes les factures pour avoir les URLs des preuves
-        const bills = await Bill.find({ _id: { $in: ids } });
+        // Filtre de sécurité : Si pas admin, on ne peut supprimer que ses propres factures
+        const query = { _id: { $in: ids } };
+        if (req.user.role !== 'admin') {
+            query.user = req.user.id;
+        }
+
+        // Récupérer d'abord toutes les factures autorisées pour avoir les URLs des preuves
+        const bills = await Bill.find(query);
         
         // Supprimer les fichiers dans S3
         for (const bill of bills) {
@@ -249,14 +274,14 @@ const deleteManyBills = async(req, res) => {
         }
 
         // Supprimer les factures de la base de données
-        const result = await Bill.deleteMany({ _id: { $in: ids } });
+        const result = await Bill.deleteMany(query);
 
         if (result.deletedCount === 0) {
-            return res.status(404).json({ message: 'Aucune facture trouvée' });
+            return res.status(404).json({ message: 'No bills found' });
         }
 
         res.status(200).json({
-            message: `${result.deletedCount} factures ont été supprimées avec succès`,
+            message: `${result.deletedCount} bills deleted successfully`,
             deletedCount: result.deletedCount
         });
     }

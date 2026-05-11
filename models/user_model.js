@@ -16,7 +16,8 @@ require('dotenv').config();
  * @property {string} email - Email de l'utilisateur (unique)
  * @property {string} description - Description de l'utilisateur
  * @property {string} password - Mot de passe hashé de l'utilisateur
- * @property {string} role - Rôle de l'utilisateur ('user' ou 'admin')
+ * @property {string} role - Rôle ('admin', 'commercial', 'user')
+ * @property {Date} createdAt - Date de création du compte
  */
 const userSchema = new mongoose.Schema({
     name:{

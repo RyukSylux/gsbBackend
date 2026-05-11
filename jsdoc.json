@@ -38,7 +38,8 @@
             },
             "codepen": true,
             "search": true,
-            "collapse": true
+            "collapse": true,
+            "create_style": "table { width: 100%; table-layout: auto; display: table !important; overflow-x: auto; } .params-container, .props-container { overflow-x: auto; width: 100%; } td.name, td.type { white-space: nowrap; width: 1%; } .details .props { margin-left: 10px; border-left: 2px solid #444; padding-left: 10px; } .details table.props { display: table !important; }"
         }
     },
     "tags": {

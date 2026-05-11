@@ -17,7 +17,8 @@
   "scripts": {
     "start": "node ./index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "docs": "jsdoc -c jsdoc.json"
+    "docs": "jsdoc -c jsdoc.json",
+    "docs:serve": "jsdoc -c jsdoc.json && npx http-server ./docs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1038.0",

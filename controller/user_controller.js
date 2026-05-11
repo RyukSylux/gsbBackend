@@ -29,7 +29,7 @@ const getUsers = async(req,res) => {
         // Sécurité : Si pas admin, on DOIT fournir son propre email
         if (!isAdmin) {
             if (!queryEmail || queryEmail !== req.user.email) {
-                return res.status(403).json({ message: 'Accès non autorisé : vous ne pouvez consulter que vos propres informations' })
+            return res.status(403).json({ message: 'Forbidden' })
             }
         }
 
@@ -58,7 +58,7 @@ const getUsersByEmail = async(req,res) => {
         
         // Sécurité : Admin ou Propriétaire du compte uniquement
         if (req.user.role !== 'admin' && req.user.email !== email) {
-            return res.status(403).json({ message: 'Accès non autorisé' })
+            return res.status(403).json({ message: 'Forbidden' })
         }
 
         const users = await User.find({email})
@@ -87,7 +87,7 @@ const getUsersByEmail = async(req,res) => {
  * @param {Object} req.body - Données de mise à jour
  * @param {string} [req.body.currentPassword] - Mot de passe actuel (requis pour non-admin)
  * @param {string} [req.body.newPassword] - Nouveau mot de passe
- * @param {string} [req.body.role] - Nouveau rôle
+ * @param {string} [req.body.role] - Nouveau rôle ('admin', 'commercial', 'user')
  * @param {string} [req.body.newEmail] - Nouvel email
  * @param {string} [req.body.name] - Nouveau nom
  * @param {string} [req.body.description] - Nouvelle description
@@ -102,20 +102,20 @@ const updateUser = async(req, res) => {
         
         // Sécurité : Un utilisateur non-admin ne peut modifier que son propre compte
         if (!isAdmin && req.user.email !== email) {
-            return res.status(403).json({ message: 'Accès non autorisé : vous ne pouvez modifier que votre propre compte' });
+            return res.status(403).json({ message: 'Forbidden' });
         }
 
         // Vérifier si l'utilisateur existe
         const user = await User.findOne({ email: email });
         if (!user) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+            return res.status(404).json({ message: 'User not found' });
         }
 
         // Si l'utilisateur n'est pas admin et qu'il veut changer le mot de passe, vérifier l'ancien
         if (newPassword && !isAdmin) {
             const isMatch = await bcrypt.compare(currentPassword, user.password);
             if (!isMatch) {
-                return res.status(401).json({ message: 'Mot de passe actuel incorrect' });
+                return res.status(401).json({ message: 'Invalid current password' });
             }
         }
 
@@ -202,13 +202,13 @@ const deleteUser = async(req, res) => {
 
         // Sécurité : Seul l'admin ou le propriétaire peut supprimer le compte
         if (!isAdmin && req.user.email !== email) {
-            return res.status(403).json({ message: 'Accès non autorisé : vous ne pouvez supprimer que votre propre compte' });
+            return res.status(403).json({ message: 'Forbidden' });
         }
 
         // D'abord, on trouve l'utilisateur pour avoir son ID
         const user = await User.findOne({email: email})
         if (!user) {
-            return res.status(404).json({message: 'Utilisateur non trouvé'})
+            return res.status(404).json({message: 'User not found'})
         }
 
         // Récupérer toutes les factures de l'utilisateur pour avoir les URLs des preuves
@@ -232,7 +232,7 @@ const deleteUser = async(req, res) => {
         await User.findOneAndDelete({email: req.params.email})
         
         res.status(200).json({
-            message: 'Utilisateur et factures associées supprimés avec succès',
+            message: 'User and associated bills deleted successfully',
             deletedBillsCount: bills.length
         })
     }
