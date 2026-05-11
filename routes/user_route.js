@@ -6,7 +6,7 @@
 const express = require('express')
 const router = express.Router()
 const { getUsers, getUsersByEmail, createUser, deleteUser, updateUser } = require('../controller/user_controller')
-const { verifyToken } = require('../controller/authentification_controller')
+const { verifyToken, isAdmin } = require('../controller/authentification_controller')
 
 /**
  * Route GET pour obtenir tous les utilisateurs
@@ -27,9 +27,11 @@ router.get('/', verifyToken, getUsers)
  * @memberof module:routes/user
  * @inner
  * @param {string} path - Chemin de la route '/'
+ * @param {callback} verifyToken - Middleware de vérification du token
+ * @param {callback} isAdmin - Middleware de vérification du rôle admin
  * @param {callback} createUser - Gestionnaire pour créer un utilisateur
  */
-router.post('/', createUser)
+router.post('/', verifyToken, isAdmin, createUser)
 
 /**
  * Route GET pour obtenir un utilisateur par son email

@@ -23,8 +23,18 @@ require('dotenv').config();
  */
 const getUsers = async(req,res) => {
     try {
-        const email = req.query.email ? {email: req.query.email} : {}
-        const users = await User.find(email)
+        const queryEmail = req.query.email
+        const isAdmin = req.user.role === 'admin'
+
+        // Sécurité : Si pas admin, on DOIT fournir son propre email
+        if (!isAdmin) {
+            if (!queryEmail || queryEmail !== req.user.email) {
+                return res.status(403).json({ message: 'Accès non autorisé : vous ne pouvez consulter que vos propres informations' })
+            }
+        }
+
+        const filter = queryEmail ? {email: queryEmail} : {}
+        const users = await User.find(filter)
         res.json(users)
     }
     catch (error) {
@@ -44,10 +54,15 @@ const getUsers = async(req,res) => {
  */
 const getUsersByEmail = async(req,res) => {
     try {
-        // Check if the email query parameter is provided
         const email = req.query.email
+        
+        // Sécurité : Admin ou Propriétaire du compte uniquement
+        if (req.user.role !== 'admin' && req.user.email !== email) {
+            return res.status(403).json({ message: 'Accès non autorisé' })
+        }
+
         const users = await User.find({email})
-        if(!users){
+        if(users.length === 0){
             throw new Error('User not found', {cause: 404})
         } else {
             res.json(users)
@@ -85,6 +100,11 @@ const updateUser = async(req, res) => {
         const {currentPassword, newPassword, role, newEmail, name, description} = req.body;
         const isAdmin = req.user.role === 'admin'; 
         
+        // Sécurité : Un utilisateur non-admin ne peut modifier que son propre compte
+        if (!isAdmin && req.user.email !== email) {
+            return res.status(403).json({ message: 'Accès non autorisé : vous ne pouvez modifier que votre propre compte' });
+        }
+
         // Vérifier si l'utilisateur existe
         const user = await User.findOne({ email: email });
         if (!user) {
@@ -177,8 +197,16 @@ const createUser = async(req, res) => {
  */
 const deleteUser = async(req, res) => {
     try {
+        const email = req.params.email;
+        const isAdmin = req.user.role === 'admin';
+
+        // Sécurité : Seul l'admin ou le propriétaire peut supprimer le compte
+        if (!isAdmin && req.user.email !== email) {
+            return res.status(403).json({ message: 'Accès non autorisé : vous ne pouvez supprimer que votre propre compte' });
+        }
+
         // D'abord, on trouve l'utilisateur pour avoir son ID
-        const user = await User.findOne({email: req.params.email})
+        const user = await User.findOne({email: email})
         if (!user) {
             return res.status(404).json({message: 'Utilisateur non trouvé'})
         }
