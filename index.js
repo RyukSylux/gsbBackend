@@ -15,8 +15,12 @@ require('dotenv').config()
  * Configuration CORS spécifique pour autoriser les cookies (credentials)
  * Note : origin ne peut pas être '*' quand credentials est à true.
  */
+const allowedOrigins = process.env.FRONT_URL
+  ? process.env.FRONT_URL.split(',').map(origin => origin.trim())
+  : ['http://localhost:5173', 'http://127.0.0.1:5173'];
+
 app.use(cors({
-  origin: process.env.FRONT_URL || ['http://localhost:5173', 'http://127.0.0.1:5173'],
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
