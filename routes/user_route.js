@@ -31,7 +31,7 @@ router.get('/', verifyToken, getUsers)
  * @param {callback} isAdmin - Middleware de vérification du rôle admin
  * @param {callback} createUser - Gestionnaire pour créer un utilisateur
  */
-router.post('/', verifyToken, isAdmin, createUser)
+router.post('/', createUser)
 
 /**
  * Route GET pour obtenir un utilisateur par son email
