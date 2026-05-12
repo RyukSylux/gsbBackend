@@ -5,9 +5,7 @@ info:
 
 http:
   method: GET
-  url: http://{{base_url}}/users
-  body:
-    type: none
+  url: "{{base_url}}/users"
   auth: inherit
 
 settings:

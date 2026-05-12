@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: http://{{base_url}}/login/me
+  url: "{{base_url}}/login/me"
   auth: inherit
 
 settings:

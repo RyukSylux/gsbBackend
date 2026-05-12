@@ -120,12 +120,17 @@ const updateUser = async(req, res) => {
         }
 
         // Préparer les données de mise à jour
+        const targetEmail = newEmail || req.body.email;
         const updateData = {
-            ...(role && { role }),
-            ...(newEmail && { email: newEmail }),
+            ...(isAdmin && role && { role }), // Seul l'admin peut modifier le rôle
+            ...(targetEmail && { email: targetEmail }),
             ...(name && { name }),
             ...(description && { description })
         };
+
+        if (Object.keys(updateData).length === 0 && !newPassword) {
+            return res.status(400).json({ message: 'No data provided for update' });
+        }
 
         // Si un nouveau mot de passe est fourni, le hasher avec Bcrypt
         if (newPassword) {
@@ -137,7 +142,7 @@ const updateUser = async(req, res) => {
         const updatedUser = await User.findOneAndUpdate(
             { email: email },
             updateData,
-            { new: true }
+            { new: true, runValidators: true }
         );
 
         // Ne pas renvoyer le mot de passe dans la réponse

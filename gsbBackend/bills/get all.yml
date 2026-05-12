@@ -5,9 +5,7 @@ info:
 
 http:
   method: GET
-  url: http://{{base_url}}/bills
-  body:
-    type: none
+  url: "{{base_url}}/bills"
   auth: inherit
 
 settings:

@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: http://{{base_url}}/bills
+  url: "{{base_url}}/bills"
   body:
     type: multipart-form
     data:
